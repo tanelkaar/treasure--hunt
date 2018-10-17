@@ -1,21 +1,55 @@
-function initMap() {
-	var currentPos = getCurrentLocation();
+var currentPos;
+var path;
+var marker;
+var map;
 
-	if (currentPos == null) {
-		currentPos = {
-			lat : 58.28091316,
-			lng : 26.88244579
-		}
-	}
-	var map = new google.maps.Map(document.getElementById('map'), {
+function initMap() {
+
+	currentPos = new google.maps.LatLng(58.28091316,26.88244579);
+	
+	map = new google.maps.Map(document.getElementById('map'), {
 		zoom : 17,
 		center : currentPos
 	});
 
-	setMarkers(map, currentPos);
+	// hide some labels and stuff
+	map.setOptions({
+		styles : [ {
+			featureType : 'poi',
+			stylers : [ {
+				visibility : 'off'
+			} ]
+		}, {
+			featureType : 'transit',
+			elementType : 'labels.icon',
+			stylers : [ {
+				visibility : 'off'
+			} ]
+		} ]
+	});
+
+	// draw path
+	path = new google.maps.Polyline({
+		strokeColor : '#000000',
+		strokeOpacity : 1.0,
+		strokeWeight : 3
+	});
+
+	path.setMap(map);
+
+	path.getPath().push(currentPos);
+	initMarkers(currentPos);
+
+	var infoWindow = new google.maps.InfoWindow;
+	updateCurrentLocation(infoWindow);
+
+	// to test polyline
+	map.addListener('click', function(event) {
+		changeCurrentPosition(event.latLng);
+	});
 }
 
-function setMarkers(map, currentPos) {
+function initMarkers(currentPos) {
 	// Adds markers to the map.
 
 	// Marker sizes are expressed as a Size of X,Y where the origin of the image
@@ -41,37 +75,42 @@ function setMarkers(map, currentPos) {
 		coords : [ 1, 1, 1, 20, 18, 20, 18, 1 ],
 		type : 'poly'
 	};
-	var marker = new google.maps.Marker({
+	marker = new google.maps.Marker({
 		position : currentPos,
 		map : map,
 		icon : image,
 		shape : shape,
 		title : 'My location',
-		zIndex : 1
+		zIndex : 3
 	});
 }
 
-function getCurrentLocation() {
+function updateCurrentLocation(infoWindow) {
 	if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(function(position) {
-			var pos = {
-				lat : position.coords.latitude,
-				lng : position.coords.longitude
-			};
-			return pos;
+			var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+			changeCurrentPosition(location);
 		}, function() {
-			handleLocationError(true);
+			handleLocationError(true, infoWindow);
 		});
 	} else {
 		// Browser doesn't support Geolocation
-		handleLocationError(false);
+		handleLocationError(false, infoWindow);
 	}
 }
 
-function handleLocationError(browserHasGeolocation) {
-	/*
-	 * infoWindow.setPosition(pos); infoWindow.setContent(browserHasGeolocation ?
-	 * 'Error: The Geolocation service failed.' : 'Error: Your browser doesn\'t
-	 * support geolocation.'); infoWindow.open(map);
-	 */
+function handleLocationError(browserHasGeolocation, infoWindow) {
+	infoWindow.setPosition(pos);
+	infoWindow
+			.setContent(browserHasGeolocation ? 'Error: The Geolocation service failed.'
+					: 'Error: Your browser doesn\'t support geolocation.');
+	infoWindow.setPosition(map.getCenter());
+	infoWindow.open(map);
+}
+
+function changeCurrentPosition(location) {
+	path.getPath().push(location);
+	marker.setPosition(location);
+	map.setCenter(location);
+	currentPos = location;
 }
