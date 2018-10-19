@@ -1,6 +1,13 @@
 <div map-lazy-load="https://maps.google.com/maps/api/js">
-  <!-- map-lazy-load-params="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGEtCoDKLLD83seTo6KaXv5T31giUwHDo" -->
-  <ng-map default-style="true" center="current-location" zoom="15">
-    <marker position="current" title="I see you" animation="Animation.BOUNCE" centered="true"></marker>
+  <!-- map-lazy-load-params="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGEtCoDKLLD83seTo6KaXv5T31giUwHDo"-->
+  <ng-map center="current-location" zoom="15" default-style="false" style="width:100%; height:100%;position: absolute;">
+    <marker ng-repeat="marker in ctrl.markers | filter: { visible: true }" position="{{marker.pos}}" title="{{marker.id}}"></marker>
+    <shape ng-repeat="marker in ctrl.markers | filter: { visible: true }" id="{{marker.id}}" name="circle"
+      stroke-color="#FF0000" stroke-opacity="0.5" stroke-weight="1"
+      center="{{marker.pos}}" radius="15" editable="false" >
+    </shape>
+    <marker position="{{ctrl.currentPos.lat()}}, {{ctrl.currentPos.lng()}}" title="I see you" animation="Animation.BOUNCE" centered="true"></marker>
   </ng-map>
+  {{ctrl.currentPos}}
+  {{ctrl.map.getCenter()}}
 </div>

@@ -3,15 +3,15 @@
 
 	angular
 		.module('treasurehunt.ui')
-		.controller('MainCtrl', MainCtrl);
+		.controller('ChallengeCtrl', ChallengeCtrl);
 	
-	function MainCtrl($state) {
+	function ChallengeCtrl($state) {
 		let ctrl = {
-			start: start
+			finish: finish
 		}
 		return ctrl = angular.extend(this, ctrl);
 		
-		function start() {
+		function finish() {
 			$state.go('map');
 		}
 	}

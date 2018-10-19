@@ -24,6 +24,15 @@
 				}
 			}
 		});
+		$stateProvider.state('challenge', {
+			url : '/challenge/{id}',
+			views: {
+				'': {
+					templateUrl: 'challenge.html',
+					controller: 'ChallengeCtrl as ctrl'
+				}
+			}
+		});
 		$urlRouterProvider.otherwise('/main');
 	}
 })();
