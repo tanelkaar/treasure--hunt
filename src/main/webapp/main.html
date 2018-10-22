@@ -1,4 +1,15 @@
-<div class="alert alert-info">create/select team and stuff</div>
-<div class="text-center">
-  <button type="button" data-ng-click="ctrl.start()" class="btn center">Start questing</button>
+<div class="container-fluid">
+    <div class="alert alert-info">create/select team and stuff</div>
+
+    <div class="form-group">
+        <label for="team">Select team</label>
+        <select class="form-control" id="selectTeam">
+            <option selected>Select team...</option>
+            <option data-ng-repeat="team in ctrl.teams" data-ng-click="ctrl.selectTeam(team)">{{team.name}}</option>
+        </select>
+    </div>
+
+    <div class="text-center">
+        <button type="button" data-ng-click="ctrl.createTeam()" class="btn center">Create team</button>
+    </div>
 </div>

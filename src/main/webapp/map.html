@@ -1,18 +1,18 @@
-<div map-lazy-load="https://maps.google.com/maps/api/js" fullscreen="true">
+<div map-lazy-load="https://maps.google.com/maps/api/js">
   <!-- map-lazy-load-params="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGEtCoDKLLD83seTo6KaXv5T31giUwHDo"-->
-  <ng-map center="current-location" zoom="15">
-    <marker ng-repeat="marker in ctrl.markers | filter: { visible: true }"
-        title="{{marker.id}}"
-        position="{{marker.pos}}"
-        icon="http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=?|FFFF00">
+  <ng-map center="current-location" zoom="15" default-style="false" style="width:100%; height:100%; position: absolute;">
+    <marker data-ng-repeat="challenge in ctrl.challenges"
+        title="{{challenge.id}}"
+        position="{{challenge.pos}}"
+        icon="http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld={{!challenge.visited ? '?|FFFF00': 'X|0000FF'}}">
     </marker>
-    <shape ng-repeat="marker in ctrl.markers | filter: { visible: true }"
-        id="{{marker.id}}"
+    <shape data-ng-repeat="challenge in ctrl.challenges | filter: { visited: false }"
+        id="{{challenge.id}}"
         name="circle"
         stroke-color="#FF0000"
         stroke-opacity="0.5"
         stroke-weight="1"
-        center="{{marker.pos}}"
+        center="{{challenge.pos}}"
         radius="15"
         editable="false" >
     </shape>
@@ -23,6 +23,7 @@
         icon="http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=star|FF0000">
     </marker>
   </ng-map>
+  wtf
   {{ctrl.currentPos}}
   {{ctrl.map.getCenter()}}
 </div>
