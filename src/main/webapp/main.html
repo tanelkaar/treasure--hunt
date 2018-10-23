@@ -1,14 +1,15 @@
-<div class="container-fluid">
+<div class="container-fluid" data-ng-if="!ctrl.isCompatible()">
+    <div class="alert alert-danger">Sorry your device is not compatible!</div>
+</div>
+<div class="container-fluid" data-ng-if="ctrl.isCompatible()">
     <div class="alert alert-info">create/select team and stuff</div>
 
     <div class="form-group">
-        <label for="team">Select team</label>
-        <select class="form-control" id="team" data-ng-model="ctrl.team" data-ng-options="team.name for team in ctrl.teams" />
+        <select class="form-control" id="team" data-ng-model="ctrl.team" data-ng-options="team.name for team in ctrl.teams" data-ng-change="ctrl.selectTeam()" />
             <option value="" selected disabled>Select team...</option>
         </select>
     </div>
     <div class="text-center">
         <button type="button" data-ng-click="ctrl.createTeam()" class="btn center">Create team</button>
-        <button type="button" data-ng-click="ctrl.selectTeam()" data-ng-disabled="!ctrl.team" class="btn center">Start</button>
     </div>
 </div>

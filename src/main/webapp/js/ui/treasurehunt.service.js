@@ -8,7 +8,9 @@
     function TreasureHuntService($q) {
         let _team;
         let _teams = [{id: 1, name: 'team1'}, {id: 2, name: 'team2'}];
-        let _challenges;
+        let _challenges = [];
+        let _posWatcher = null;
+        let _currentPos = null;
         let _posOpts = {
             enableHighAccuracy: true,
             timeout: 5000,
@@ -16,6 +18,7 @@
         };
 
         let service = {
+            isCompatible: isCompatible,
             hasTeam: hasTeam,
             getTeams: getTeams,
             createTeam: createTeam,
@@ -26,6 +29,10 @@
             resolveChallenge: resolveChallenge
         };
         return service;
+
+        function isCompatible() {
+            return !!navigator.geolocation;
+        }
 
         function hasTeam() {
             return !_.isEmpty(_team);
@@ -48,23 +55,55 @@
         }
 
         function selectTeam(team) {
+            startTracking();
             let defer = $q.defer();
             defer.resolve(_team = team);
             return defer.promise;
         }
 
+        function startTracking() {
+            console.log('start tracking');
+            if (!isCompatible() || _posWatcher) {
+                return;
+            }
+            _posWatcher = navigator.geolocation.watchPosition((pos) => {
+                console.log('watcher: ', pos);
+                _currentPos = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                };
+            }, (err) => {
+                console.error('error watching current pos: ', err);
+            }); //, _posOpts);
+        }
+
+        function stopTracking() {
+            if (!isCompatible() || !_posWatcher) {
+                return;
+            }
+            navigator.geolocation.clearWatch(_posWatcher);
+        }
+
         function getCurrentPos() {
-            console.log('get pos');
+            console.log('get current pos');
             let defer = $q.defer();
-            navigator.geolocation.getCurrentPosition(function(position) {
-                defer.resolve({
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                });
-            }, function (error) {
-                console.error('error getting current pos: ', error);
+            if (!isCompatible()) {
                 defer.reject();
-            }, _posOpts);
+                return defer.promise;
+            }
+            if (_currentPos) {
+                defer.resolve(_currentPos);
+                return defer.promise;
+            }
+            navigator.geolocation.getCurrentPosition((pos) => {
+                defer.resolve(_currentPos = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                });
+            }, (err) => {
+                console.error('error getting current pos: ', err);
+                defer.reject();
+            }); //, _posOpts);
             return defer.promise;
         }
 
@@ -75,7 +114,6 @@
                 defer.resolve(_challenges);
             } else {
                 getCurrentPos().then((pos) => {
-                    _challenges = [];
                     for (let i = 1; i <= 5; i++) {
                         _challenges.push({
                             id: 'challenge_' + i,

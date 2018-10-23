@@ -5,7 +5,11 @@
         .module('treasurehunt.ui')
         .controller('MapCtrl', MapCtrl);
 
-    function MapCtrl(currentPos, challenges, $state, $interval, NgMap, TreasureHuntService) {
+    function MapCtrl(currentPos, challenges, $scope, $state, $interval, NgMap, TreasureHuntService) {
+        $scope.$on('$destroy', () => {
+            cleanup();
+        });
+
         let _watcher;
 
         let ctrl = {
@@ -27,7 +31,7 @@
 
         function refreshMap() {
             console.log('refresh map');
-            NgMap.getMap().then(function (map) {
+            NgMap.getMap().then((map) => {
                 ctrl.map = map;
 
                 let pos = new google.maps.LatLng(ctrl.currentPos.lat, ctrl.currentPos.lng);

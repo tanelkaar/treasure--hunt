@@ -5,10 +5,11 @@
         .module('treasurehunt.ui')
         .controller('MainCtrl', MainCtrl);
 
-    function MainCtrl(teams, $state, TreasureHuntService) {
+    function MainCtrl(teams, $scope, $state, TreasureHuntService) {
         let ctrl = {
             team: null,
             teams: teams,
+            isCompatible: TreasureHuntService.isCompatible,
             createTeam: createTeam,
             selectTeam: selectTeam
         }

@@ -3,7 +3,8 @@
 
     angular
         .module('treasurehunt.ui', [])
-        .config(config);
+        .config(config)
+        .run(run);
 
     function config($stateProvider, $urlRouterProvider) {
         $stateProvider.state('main', {
@@ -15,12 +16,7 @@
                 }
             },
             resolve: {
-                init: function($state, TreasureHuntService) {
-                    if (TreasureHuntService.hasTeam()) {
-                        $state.go('/map');
-                    }
-                },
-                teams: function(TreasureHuntService) {
+                teams: (TreasureHuntService) => {
                     return TreasureHuntService.getTeams();
                 }
             }
@@ -34,15 +30,10 @@
                 }
             },
             resolve: {
-                init: function($state, TreasureHuntService) {
-                    if (!TreasureHuntService.hasTeam()) {
-                        $state.go('/main');
-                    }
-                },
-                currentPos: function(TreasureHuntService) {
+                currentPos: (TreasureHuntService) => {
                     return TreasureHuntService.getCurrentPos();
                 },
-                challenges: function(TreasureHuntService) {
+                challenges: (TreasureHuntService) => {
                     return TreasureHuntService.getChallenges();
                 }
             }
@@ -56,16 +47,27 @@
                 }
             },
             resolve: {
-                init: function($state, TreasureHuntService) {
-                    if (!TreasureHuntService.hasTeam()) {
-                        $state.go('/main');
-                    }
-                },
-                challenge: function($stateParams, TreasureHuntService) {
+                challenge: ($stateParams, TreasureHuntService) => {
                     return TreasureHuntService.getChallenge($stateParams.id);
                 }
             }
         });
-        $urlRouterProvider.otherwise('/main');
+        $urlRouterProvider.otherwise('main');
+    }
+
+    function run($rootScope, $state, TreasureHuntService) {
+        $rootScope.$on('$stateChangeStart', (event, toState, toParams, fromState, fromParams, options) => {
+            if (toState.name != 'main' && !TreasureHuntService.hasTeam()) {
+                event.preventDefault();
+                $state.go('main');
+                return;
+            }
+
+            if (toState.name === 'main' && TreasureHuntService.hasTeam()) {
+                event.preventDefault();
+                $state.go('map');
+                return;
+            }
+        });
     }
 })();
