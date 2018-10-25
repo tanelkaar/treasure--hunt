@@ -3,7 +3,7 @@
     <marker data-ng-repeat="challenge in ctrl.challenges"
         title="{{challenge.id}}"
         position="{{challenge.pos}}"
-        icon="http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld={{!challenge.visited ? '?|FFFF00': 'X|0000FF'}}">
+        icon="{{!challenge.visited ? 'img/yellow_pin_with_qm.png': 'img/blue_pin_with_x.png'}}">
     </marker>
     <shape data-ng-repeat="challenge in ctrl.challenges | filter: { visited: false }"
         id="{{challenge.id}}"
@@ -19,7 +19,7 @@
         position="[{{ctrl.currentPos.lat}}, {{ctrl.currentPos.lng}}]"
         animation="Animation.BOUNCE"
         centered="true"
-        icon="http://chart.apis.google.com/chart?chst=d_map_pin_icon&chld=star|FF0000">
+        icon="img/pin_with_star.png">
     </marker>
   </ng-map>
   {{ctrl.currentPos}}
