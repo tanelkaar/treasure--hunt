@@ -13,9 +13,10 @@
         let _currentPos = null;
         let _posOpts = {
             enableHighAccuracy: true,
-            timeout: 5000,
+            //timeout: 0,
             maximumAge: 0
         };
+        let _posDefer = $q.defer();
 
         let service = {
             isCompatible: isCompatible,
@@ -46,11 +47,15 @@
         }
 
         function createTeam(team) {
+            console.log('create team');
             let defer = $q.defer();
-            defer.resolve(() => {
+            if (_.isEmpty(team)) {
+                defer.reject();
+            } else {
+                team.id = _teams.length + 1;
                 _teams.push(team);
-                _team = team
-            });
+                defer.resolve(_team = team);
+            }
             return defer.promise;
         }
 
@@ -74,7 +79,7 @@
                 };
             }, (err) => {
                 console.error('error watching current pos: ', err);
-            }); //, _posOpts);
+            }, _posOpts);
         }
 
         function stopTracking() {
@@ -86,25 +91,26 @@
 
         function getCurrentPos() {
             console.log('get current pos');
-            let defer = $q.defer();
             if (!isCompatible()) {
-                defer.reject();
-                return defer.promise;
+                _posDefer = $q.defer();
+                _posDefer.reject();
+                return _posDefer.promise;
             }
             if (_currentPos) {
-                defer.resolve(_currentPos);
-                return defer.promise;
+                _posDefer = $q.defer();
+                _posDefer.resolve(_currentPos);
+                return _posDefer.promise;
             }
             navigator.geolocation.getCurrentPosition((pos) => {
-                defer.resolve(_currentPos = {
+                _posDefer.resolve(_currentPos = {
                     lat: pos.coords.latitude,
                     lng: pos.coords.longitude
                 });
             }, (err) => {
                 console.error('error getting current pos: ', err);
-                defer.reject();
-            }); //, _posOpts);
-            return defer.promise;
+                getCurrentPos();
+            }, _posOpts);
+            return _posDefer.promise;
         }
 
         function getChallenges() {

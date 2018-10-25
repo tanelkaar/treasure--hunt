@@ -7,6 +7,7 @@
 
     function MainCtrl(teams, $scope, $state, TreasureHuntService) {
         let ctrl = {
+            mode: 'SELECT',
             team: null,
             teams: teams,
             isCompatible: TreasureHuntService.isCompatible,
@@ -16,7 +17,10 @@
         return ctrl = angular.extend(this, ctrl);
 
         function createTeam() {
-            console.log('create team - implement meh');
+            console.log('create team');
+            TreasureHuntService.createTeam(ctrl.team).then(() => {
+                $state.go('map');
+            });
         }
 
         function selectTeam() {
