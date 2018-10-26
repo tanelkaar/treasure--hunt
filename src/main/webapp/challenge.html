@@ -1,7 +1,71 @@
 <div class="container-fluid">
-    <div class="alert alert-info">Some input from the challenge</div>
-    {{ctrl.challenge}}
-    <div class="text-center">
-        <button type="button" data-ng-click="ctrl.finish()" class="btn center">Finish</button>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <select 
+                    id="challenge"
+                    class="form-control"
+                    data-ng-model="ctrl.challenge"
+                    data-ng-options="challenge.answerType for challenge in ctrl.challenges" />
+                    <option value="" selected disabled>- Select challenge -</option>
+                </select>
+            </div>
+            <div class="alert alert-success" data-ng-if="ctrl.challenge.text">
+                <h4 data-ng-if="ctrl.challenge.type === 'QUESTION'">Question</h4>
+                <h4 data-ng-if="ctrl.challenge.type === 'TASK'">Task</h4>
+                {{ctrl.challenge.text}}
+            </div>
+            <img class="img-thumbnail mb-3" data-ng-if="ctrl.challenge.image" data-ng-src="{{ctrl.challenge.image | trustUrl}}" />
+            <div class="embed-responsive embed-responsive-16by9 mb-3" data-ng-if="ctrl.challenge.video">
+                <iframe class="embed-responsive-item" data-ng-src="{{ctrl.challenge.video | trustUrl}}" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col">
+            <form name="form" novalidate>
+                <div class="form-group" data-ng-if="ctrl.challenge.answerType === 'TEXT'">
+                    <textarea
+                        id="answer"
+                        name="answer"
+                        class="form-control"
+                        rows="2"
+                        required="true"
+                        data-ng-model="ctrl.answer.value"></textarea>
+                </div>
+                <div class="form-group" data-ng-if="ctrl.challenge.answerType === 'SINGLE_CHOICE'">
+                    <div class="form-check" data-ng-repeat="option in ctrl.challenge.options">
+                        <input
+                        id="{{option.id}}"
+                        name="answer"
+                        type="radio"
+                        class="form-check-input"
+                        value="true"
+                        required="true"
+                        data-ng-model="option.selected"
+                        data-ng-click="ctrl.selectOption(option)">
+                        <label class="form-check-label" for="{{option.id}}">{{option.name}}</label>
+                    </div>
+                </div>
+                <div class="form-group" data-ng-if="ctrl.challenge.answerType === 'MULTI_CHOICE'">
+                    <div class="form-check" data-ng-repeat="option in ctrl.challenge.options">
+                        <input
+                            id="{{option.id}}"
+                            type="checkbox"
+                            class="form-check-input"
+                            data-ng-required="!ctrl.hasSelectedOption()"
+                            data-ng-model="option.selected">
+                        <label class="form-check-label" for="{{option.id}}">{{option.name}}</label>
+                    </div>
+                </div>
+                <div class="form-group" data-ng-if="ctrl.challenge.answerType === 'IMAGE'">
+                    implement meh!
+                </div>
+                <div class="text-center">
+                    <button type="button" data-ng-click="ctrl.complete()" class="btn center" data-ng-disabled="form.$invalid">Complete</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

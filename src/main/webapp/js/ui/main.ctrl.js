@@ -5,7 +5,7 @@
         .module('treasurehunt.ui')
         .controller('MainCtrl', MainCtrl);
 
-    function MainCtrl(teams, $scope, $state, TreasureHuntService) {
+    function MainCtrl(teams, $state, TreasureHuntService) {
         let ctrl = {
             mode: 'SELECT',
             team: null,

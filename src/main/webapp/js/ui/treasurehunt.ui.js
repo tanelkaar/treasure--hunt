@@ -4,6 +4,16 @@
     angular
         .module('treasurehunt.ui', [])
         .config(config)
+        .constant('CHALLENE_TYPE', {
+            QUESTION: 'QUESTION',
+            TASK: 'TASK'
+        })
+        .constant('ANSWER_TYPE', {
+            TEXT: 'TEXT',
+            SINGLE_CHOICE: 'SINGLE_CHOICE',
+            MULTI_CHOICE: 'MULTI_CHOICE',
+            IMAGE: 'IMAGE'
+        })
         .run(run);
 
     function config($stateProvider, $urlRouterProvider) {
@@ -47,8 +57,13 @@
                 }
             },
             resolve: {
-                challenge: ($stateParams, TreasureHuntService) => {
-                    return TreasureHuntService.getChallenge($stateParams.id);
+                challenge: ($q, $stateParams, TreasureHuntService) => {
+                    console.log('challenge resolve');
+                    //return TreasureHuntService.getChallenge($stateParams.id);
+                    let textChallenge = {id: 1, type: 'IMAGE', question: 'Which came first - the chicken or the egg?'};
+                    let defer = $q.defer();
+                    defer.resolve(textChallenge);
+                    return defer.promise;
                 }
             }
         });
@@ -57,6 +72,9 @@
 
     function run($rootScope, $state, TreasureHuntService) {
         $rootScope.$on('$stateChangeStart', (event, toState, toParams, fromState, fromParams, options) => {
+            if (toState.name === 'challenge') {
+                return;
+            }
             if (toState.name != 'main' && !TreasureHuntService.hasTeam()) {
                 event.preventDefault();
                 $state.go('main');
