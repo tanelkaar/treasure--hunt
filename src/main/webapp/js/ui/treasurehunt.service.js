@@ -5,7 +5,7 @@
         .module('treasurehunt.ui')
         .factory('TreasureHuntService', TreasureHuntService);
 
-    function TreasureHuntService($q) {
+    function TreasureHuntService($q, $http) {
         let _team;
         let _teams = [{id: 1, name: 'team1'}, {id: 2, name: 'team2'}];
         let _challenges = [];
@@ -41,22 +41,12 @@
 
         function getTeams() {
             console.log('get teams');
-            let defer = $q.defer();
-            defer.resolve(_teams);
-            return defer.promise;
+            return $http.get('/api/teams');
         }
 
         function createTeam(team) {
             console.log('create team');
-            let defer = $q.defer();
-            if (_.isEmpty(team)) {
-                defer.reject();
-            } else {
-                team.id = _teams.length + 1;
-                _teams.push(team);
-                defer.resolve(_team = team);
-            }
-            return defer.promise;
+            return $http.post('/api/team', team);
         }
 
         function selectTeam(team) {

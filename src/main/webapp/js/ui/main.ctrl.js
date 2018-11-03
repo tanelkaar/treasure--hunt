@@ -6,6 +6,7 @@
         .controller('MainCtrl', MainCtrl);
 
     function MainCtrl(teams, $state, TreasureHuntService) {
+      console.log('teams: ', teams);
         let ctrl = {
             mode: 'SELECT',
             team: null,
@@ -18,8 +19,9 @@
 
         function createTeam() {
             console.log('create team');
-            TreasureHuntService.createTeam(ctrl.team).then(() => {
-                $state.go('map');
+            TreasureHuntService.createTeam(ctrl.team).then((rsp) => {
+                ctrl.team = rsp.data;
+                selectTeam();
             });
         }
 

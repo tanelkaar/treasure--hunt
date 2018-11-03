@@ -16,18 +16,29 @@
         })
         .run(run);
 
-    function config($stateProvider, $urlRouterProvider) {
+    function config($stateProvider, $urlRouterProvider, $httpProvider) {
+        $httpProvider.interceptors.push(() => {
+          return {
+            'request': (config) => {
+              config.url = '/treasure-hunt' + config.url;
+              return config;
+            }
+          }
+        });
+
         $stateProvider.state('main', {
             url: '/main',
             views: {
                 '': {
-                    templateUrl: 'main.html',
+                    templateUrl: '/main.html',
                     controller: 'MainCtrl as ctrl'
                 }
             },
             resolve: {
                 teams: (TreasureHuntService) => {
-                    return TreasureHuntService.getTeams();
+                    return TreasureHuntService.getTeams().then((rsp) => {
+                      return rsp.data;
+                    });
                 }
             }
         });
@@ -35,7 +46,7 @@
             url: '/map',
             views: {
                 '': {
-                    templateUrl: 'map.html',
+                    templateUrl: '/map.html',
                     controller: 'MapCtrl as ctrl'
                 }
             },
@@ -52,7 +63,7 @@
             url: '/challenge/{id}',
             views: {
                 '': {
-                    templateUrl: 'challenge.html',
+                    templateUrl: '/challenge.html',
                     controller: 'ChallengeCtrl as ctrl'
                 }
             },
