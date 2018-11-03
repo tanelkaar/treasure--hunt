@@ -6,7 +6,6 @@
         .controller('MainCtrl', MainCtrl);
 
     function MainCtrl(teams, $state, TreasureHuntService) {
-      console.log('teams: ', teams);
         let ctrl = {
             mode: 'SELECT',
             team: null,

@@ -7,7 +7,6 @@
 
     function TreasureHuntService($q, $http) {
         let _team;
-        let _teams = [{id: 1, name: 'team1'}, {id: 2, name: 'team2'}];
         let _challenges = [];
         let _posWatcher = null;
         let _currentPos = null;
