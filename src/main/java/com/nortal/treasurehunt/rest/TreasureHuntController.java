@@ -27,7 +27,7 @@ public class TreasureHuntController {
     if (exsisting.isPresent()) {
       return ResponseEntity.ok(exsisting.get());
     }
-    team.setId(Long.valueOf(teams.size()));
+//    team.setId(Long.valueOf(teams.size()));
     teams.add(team);
     return ResponseEntity.ok(team);
   }
