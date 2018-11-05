@@ -20,7 +20,7 @@
         $httpProvider.interceptors.push(() => {
           return {
             'request': (config) => {
-              config.url = '/treasure-hunt' + config.url;
+              //config.url = '/treasure-hunt' + config.url;
               return config;
             }
           }
