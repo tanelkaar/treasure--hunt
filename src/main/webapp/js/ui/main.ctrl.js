@@ -5,23 +5,22 @@
         .module('treasurehunt.ui')
         .controller('MainCtrl', MainCtrl);
 
-    function MainCtrl(teams, $state, TreasureHuntService) {
+    function MainCtrl(isRunning, teams, $state, GameService) {
         let ctrl = {
+            isRunning: isRunning,
             mode: 'SELECT',
             team: null,
             teams: teams,
-            isCompatible: TreasureHuntService.isCompatible,
-            createTeam: createTeam,
+            isCompatible: GameService.isCompatible,
+            startGame: startGame,
             selectTeam: selectTeam
         }
         return ctrl = angular.extend(this, ctrl);
 
-        function createTeam() {
-            console.log('create team');
-            TreasureHuntService.createTeam(ctrl.team).then((rsp) => {
-                ctrl.team = rsp.data;
-                selectTeam();
-            });
+        function startGame() {
+          GameService.startGame().then(() => {
+            ctrl.isRunning = true;
+          });
         }
 
         function selectTeam() {
@@ -29,7 +28,7 @@
             if (_.isEmpty(ctrl.team)) {
                 return;
             }
-            TreasureHuntService.selectTeam(ctrl.team).then(() => {
+            GameService.selectTeam(ctrl.team).then(() => {
                 $state.go('map');
             });
         }

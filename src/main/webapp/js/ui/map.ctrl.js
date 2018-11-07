@@ -5,16 +5,15 @@
         .module('treasurehunt.ui')
         .controller('MapCtrl', MapCtrl);
 
-    function MapCtrl(currentPos, challenges, $scope, $state, $interval, NgMap, TreasureHuntService) {
+    function MapCtrl(currentPos, map, $scope, $state, $interval, NgMap, GameService) {
         $scope.$on('$destroy', () => {
             cleanup();
         });
 
         let _watcher;
-
         let ctrl = {
             currentPos: currentPos,
-            challenges: challenges,
+            waypoints: map.waypoints,
             map: null
         };
         init();
@@ -22,7 +21,7 @@
 
         function init() {
             _watcher = $interval(() => {
-                TreasureHuntService.getCurrentPos().then((pos) => {
+                GameService.getCurrentPos().then((pos) => {
                     ctrl.currentPos = pos;
                     refreshMap();
                 });
@@ -38,11 +37,11 @@
                 _.each(map.shapes, (shape) => {
                     if (shape.getBounds().contains(pos)) {
                         console.log('start challenge');
-                        let challenge = _.find(ctrl.challenges, (challenge) => {
-                            return challenge.id === shape.id;
+                        let challenge = _.find(ctrl.waypoints, (waypoint) => {
+                            return waypoint.challengeId === shape.id;
                         });
                         cleanup();
-                        $state.go('challenge', { id: challenge.id });
+                        $state.go('challenge', { id: waypoint.challengeId });
                     }
                 });
             });

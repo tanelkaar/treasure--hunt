@@ -1,42 +1,34 @@
 <div class="container-fluid" data-ng-if="!ctrl.isCompatible()">
-    <div class="alert alert-danger">Sorry your device is not compatible!</div>
+  <div class="alert alert-danger">Sorry your device is not compatible!</div>
 </div>
 <div class="container-fluid" data-ng-if="ctrl.isCompatible()">
-    <form name="form" novalidate>
-        <div data-ng-if="ctrl.mode === 'SELECT'">
-            <div class="alert alert-info">create/select team and stuff</div>
-        
-            <div class="form-group">
-                <select 
-                    id="team"
-                    class="form-control"
-                    data-ng-model="ctrl.team"
-                    data-ng-options="team.name for team in ctrl.teams"
-                    data-ng-change="ctrl.selectTeam()" />
-                    <option value="" selected disabled>- Select team -</option>
-                </select>
-            </div>
-            <div class="text-center">
-                <button type="button" class="btn center" data-ng-click="ctrl.mode = 'CREATE'">Create team</button>
-            </div>
-        </div>
-        <div data-ng-if="ctrl.mode === 'CREATE'">
-            <div class="form-group">
-                <input 
-                    id="name"
-                    name="name"
-                    class="form-control"
-                    type="text"
-                    placeholder="- Team name -"
-                    required="true"
-                    data-ng-minlength="5"
-                    data-ng-class="{'is-valid': form.name.$valid,'is-invalid': form.name.$invalid}"
-                    data-ng-model="ctrl.team.name" />
-            </div>
-            <div class="text-center">
-                <button type="button" class="btn center" data-ng-click="ctrl.mode = 'SELECT'" data-ng-disabled="form.$submitted">Back</button>
-                <button type="button" class="btn center" data-ng-click="ctrl.createTeam()" data-ng-disabled="form.$invalid || form.$submitted">Start</button>
-            </div>
-        </div>
-    </form>
+  <div class="text-center" data-ng-if="!ctrl.isRunning">
+    <button type="button" class="btn center" data-ng-click="ctrl.startGame()">Start</button>
+  </div>
+  <form name="form" novalidate data-ng-if="ctrl.isRunning">
+    <div data-ng-if="ctrl.mode === 'SELECT'">
+      <div class="alert alert-info">create/select team and stuff</div>
+
+      <div class="form-group">
+        <select id="team" class="form-control" data-ng-model="ctrl.team" data-ng-options="team.name for team in ctrl.teams"
+          data-ng-change="ctrl.selectTeam()" />
+        <option value="" selected disabled>- Select team -</option>
+        </select>
+      </div>
+      <div class="text-center">
+        <button type="button" class="btn center" data-ng-click="ctrl.mode = 'CREATE'">Create team</button>
+      </div>
+    </div>
+    <div data-ng-if="ctrl.mode === 'CREATE'">
+      <div class="form-group">
+        <input id="name" name="name" class="form-control" type="text" placeholder="- Team name -" required="true"
+          data-ng-minlength="5" data-ng-class="{'is-valid': form.name.$valid,'is-invalid': form.name.$invalid}"
+          data-ng-model="ctrl.team.name" />
+      </div>
+      <div class="text-center">
+        <button type="button" class="btn center" data-ng-click="ctrl.mode = 'SELECT'" data-ng-disabled="form.$submitted">Back</button>
+        <button type="button" class="btn center" data-ng-click="ctrl.selectTeam()" data-ng-disabled="form.$invalid || form.$submitted">Start</button>
+      </div>
+    </div>
+  </form>
 </div>

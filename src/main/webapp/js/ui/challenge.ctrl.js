@@ -12,7 +12,7 @@
         }
     }
 
-    function ChallengeCtrl(challenge, $state, $stateParams, TreasureHuntService, CHALLENE_TYPE, ANSWER_TYPE) {
+    function ChallengeCtrl(challenge, $state, $stateParams, GameService, CHALLENE_TYPE, ANSWER_TYPE) {
         console.log('challenge ctrl');
         let ctrl = {
             answer: {
@@ -79,7 +79,7 @@
             }
             console.log('ANSWER: ', ctrl.answer);
             /*
-            TreasureHuntService.resolveChallenge({id: $stateParams.id}).then(() => {
+            GameService.completeChallenge({id: $stateParams.id}).then(() => {
                 $state.go('map');
             });*/
         }

@@ -41,7 +41,7 @@ public class Team {
 
   public void addMember(Member member) {
     this.members.add(member);
-    if(primaryMember == null) {
+    if (primaryMember == null) {
       primaryMember = member;
     }
   }
@@ -68,7 +68,7 @@ public class Team {
 
   public void startChallenge(Challenge challenge) {
     uncompletedChallenges.remove(challenge);
-    if(currentChallenge == null) {
+    if (currentChallenge == null) {
       currentChallenge = new TeamChallenge(this, challenge);
     }
     currentChallenge.setStartTimestamp(System.currentTimeMillis());
@@ -76,7 +76,7 @@ public class Team {
   }
 
   public void completeCurrentChallenge(String result) {
-    if(currentChallenge == null) {
+    if (currentChallenge == null) {
       throw new IllegalStateException("Unable to complete current challenge - no challenge started!");
     }
     currentChallenge.setResult(result);
@@ -109,9 +109,9 @@ public class Team {
     trail.add(trailLog);
     lastUpdateTimestamp = System.currentTimeMillis();
     // TODO - check if new coordinates intersect with uncompleted challenges
-    if(currentChallenge == null) {
-      for(Challenge challenge: uncompletedChallenges) {
-        if(CoordinatesUtil.intersects(challenge.getBoundaries(), trailLog.getCoordinates())) {
+    if (currentChallenge == null) {
+      for (Challenge challenge : uncompletedChallenges) {
+        if (CoordinatesUtil.intersects(challenge.getBoundaries(), trailLog.getCoordinates())) {
           startChallenge(challenge);
           break;
         }
@@ -128,4 +128,3 @@ public class Team {
   }
 
 }
->>>>>>> Stashed changes

@@ -35,8 +35,13 @@
                 }
             },
             resolve: {
-                teams: (TreasureHuntService) => {
-                    return TreasureHuntService.getTeams().then((rsp) => {
+                isRunning: (GameService) => {
+                  return GameService.isRunning().then((rsp) => {
+                    return rsp.data;
+                  });
+                },
+                teams: (GameService) => {
+                    return GameService.getTeams().then((rsp) => {
                       return rsp.data;
                     });
                 }
@@ -51,11 +56,13 @@
                 }
             },
             resolve: {
-                currentPos: (TreasureHuntService) => {
-                    return TreasureHuntService.getCurrentPos();
+                currentPos: (GameService) => {
+                    return GameService.getCurrentPos();
                 },
-                challenges: (TreasureHuntService) => {
-                    return TreasureHuntService.getChallenges();
+                map: (GameService) => {
+                    return GameService.getMap().then((rsp) => {
+                      return rsp.data;
+                    });
                 }
             }
         });
@@ -68,9 +75,11 @@
                 }
             },
             resolve: {
-                challenge: ($q, $stateParams, TreasureHuntService) => {
-                    console.log('challenge resolve');
-                    //return TreasureHuntService.getChallenge($stateParams.id);
+                challenge: ($q, $stateParams, GameService) => {
+                  console.log('challenge resolve');
+                  //return GameService.startChallenge($stateParams.id).then((rsp) => {
+                  //  return rsp.data;
+                  //});
                     let textChallenge = {id: 1, type: 'IMAGE', question: 'Which came first - the chicken or the egg?'};
                     let defer = $q.defer();
                     defer.resolve(textChallenge);
@@ -81,18 +90,18 @@
         $urlRouterProvider.otherwise('main');
     }
 
-    function run($rootScope, $state, TreasureHuntService) {
+    function run($rootScope, $state, GameService) {
         $rootScope.$on('$stateChangeStart', (event, toState, toParams, fromState, fromParams, options) => {
             if (toState.name === 'challenge') {
                 return;
             }
-            if (toState.name != 'main' && !TreasureHuntService.hasTeam()) {
+            if (toState.name != 'main' && !GameService.hasTeam()) {
                 event.preventDefault();
                 $state.go('main');
                 return;
             }
 
-            if (toState.name === 'main' && TreasureHuntService.hasTeam()) {
+            if (toState.name === 'main' && GameService.hasTeam()) {
                 event.preventDefault();
                 $state.go('map');
                 return;

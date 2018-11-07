@@ -3,11 +3,10 @@
 
     angular
         .module('treasurehunt.ui')
-        .factory('TreasureHuntService', TreasureHuntService);
+        .factory('GameService', GameService);
 
-    function TreasureHuntService($q, $http) {
-        let _team;
-        let _challenges = [];
+    function GameService($q, $http) {
+        let _memberId;
         let _posWatcher = null;
         let _currentPos = null;
         let _posOpts = {
@@ -19,39 +18,55 @@
 
         let service = {
             isCompatible: isCompatible,
+            isRunning: isRunning,
+            startGame: startGame,
+            getMap: getMap,
             hasTeam: hasTeam,
             getTeams: getTeams,
-            createTeam: createTeam,
             selectTeam: selectTeam,
             getCurrentPos: getCurrentPos,
-            getChallenges: getChallenges,
-            getChallenge: getChallenge,
-            resolveChallenge: resolveChallenge
+            startChallenge: startChallenge,
+            completeChallenge: completeChallenge
         };
+        startTracking();
         return service;
 
         function isCompatible() {
             return !!navigator.geolocation;
         }
 
+        function isRunning() {
+          return $http.get('/api/game/is-running');
+        }
+
+        function startGame() {
+          return getCurrentPos().then((pos) => {
+            return $http.post('/api/game/start', {
+              name: 'T1000',
+              start: pos
+            });
+          });
+        }
+
+        function getMap() {
+          return $http.get('/api/game/member/' + _memberId + '/map');
+        }
+
         function hasTeam() {
-            return !_.isEmpty(_team);
+          console.log('HAS TEAM: ', !!_memberId);
+            return !!_memberId;
         }
 
         function getTeams() {
             console.log('get teams');
-            return $http.get('/api/teams');
-        }
-
-        function createTeam(team) {
-            console.log('create team');
-            return $http.post('/api/team', team);
+            return $http.get('/api/game/teams');
         }
 
         function selectTeam(team) {
-            startTracking();
             let defer = $q.defer();
-            defer.resolve(_team = team);
+            $http.post('/api/game/select-team', team).then((rsp) => {
+              defer.resolve(_memberId = rsp.data);
+            });
             return defer.promise;
         }
 
@@ -102,45 +117,14 @@
             return _posDefer.promise;
         }
 
-        function getChallenges() {
-            console.log('get challenges');
-            let defer = $q.defer();
-            if (!_.isEmpty(_challenges)) {
-                defer.resolve(_challenges);
-            } else {
-                getCurrentPos().then((pos) => {
-                    for (let i = 1; i <= 5; i++) {
-                        _challenges.push({
-                            id: 'challenge_' + i,
-                            pos: [getRandomPos(pos.lat), getRandomPos(pos.lng)],
-                            visible: true,
-                            visited: false
-                        });
-                    }
-                    defer.resolve(_challenges);
-                });
-            }
-            return defer.promise;
+        function startChallenge(id) {
+          return getCurrentPos().then((pos) => {
+            return $http.post('/api/game/member/' + _memberId + '/challenge/' + id, pos);
+          });
         }
 
-        function getChallenge(id) {
-            let defer = $q.defer();
-            defer.resolve(_.find(_challenges, (challenge) => {
-                return challenge.id === id;
-            }));
-            return defer.promise;
-        }
-
-        function resolveChallenge(challenge) {
-            let defer = $q.defer();
-            defer.resolve(_.find(_challenges, (c) => {
-                return challenge.id === c.id;
-            }).visited = true);
-            return defer.promise;
-        }
-
-        function getRandomPos(pos) {
-            return pos + ((parseInt(Math.random() * 100) % 2 == 0 ? -1 : 1) * (Math.random() / 500))
+        function completeChallenge(challenge) {
+            // TODO
         }
     }
 })();
