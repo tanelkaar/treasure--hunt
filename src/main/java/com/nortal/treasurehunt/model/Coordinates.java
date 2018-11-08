@@ -4,12 +4,16 @@ import java.math.BigDecimal;
 
 /**
  * Latitude and longitude
+ * 
  * @author Tanel Käär (Tanel.Kaar@nortal.com)
  */
 public class Coordinates {
 
   private BigDecimal lat;
   private BigDecimal lng;
+
+  public Coordinates() {
+  }
 
   public Coordinates(BigDecimal lat, BigDecimal lng) {
     this.lat = lat;
@@ -31,6 +35,5 @@ public class Coordinates {
   public void setLng(BigDecimal lng) {
     this.lng = lng;
   }
-
 
 }
