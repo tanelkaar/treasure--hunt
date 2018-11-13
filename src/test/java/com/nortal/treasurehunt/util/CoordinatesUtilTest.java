@@ -13,27 +13,24 @@ public class CoordinatesUtilTest {
     int marginMeters = 100;
 
     // test somewhere on equator, in the west
-    Coordinates center = new Coordinates(BigDecimal.ZERO,
-        BigDecimal.valueOf(-77.988496046));
-    Boundaries boundaries = new Boundaries(center, marginMeters);
-    System.out.println(boundaries);
-    Assert.assertTrue(CoordinatesUtil.intersects(boundaries, center));
+    assertIntersect(marginMeters,
+        new Coordinates(BigDecimal.ZERO, BigDecimal.valueOf(-77.988496046)));
 
     // Test on equator, in the east
-    center = new Coordinates(BigDecimal.ZERO, BigDecimal.valueOf(77.988496046));
-    boundaries = new Boundaries(center, marginMeters);
-    System.out.println(boundaries);
-    Assert.assertTrue(CoordinatesUtil.intersects(boundaries, center));
+    assertIntersect(marginMeters,
+        new Coordinates(BigDecimal.ZERO, BigDecimal.valueOf(77.988496046)));
 
     // Test on 0 meridian, in the north
-    center = new Coordinates(BigDecimal.valueOf(77.988496046), BigDecimal.ZERO);
-    boundaries = new Boundaries(center, marginMeters);
-    System.out.println(boundaries);
-    Assert.assertTrue(CoordinatesUtil.intersects(boundaries, center));
+    assertIntersect(marginMeters,
+        new Coordinates(BigDecimal.valueOf(77.988496046), BigDecimal.ZERO));
 
     // Test on 0 meridian, in the south
-    center = new Coordinates(BigDecimal.valueOf(-77.988496046), BigDecimal.ZERO);
-    boundaries = new Boundaries(center, marginMeters);
+    assertIntersect(marginMeters,
+        new Coordinates(BigDecimal.valueOf(-77.988496046), BigDecimal.ZERO));
+  }
+
+  private void assertIntersect(int marginMeters, Coordinates center) {
+    Boundaries boundaries = new Boundaries(center, marginMeters);
     System.out.println(boundaries);
     Assert.assertTrue(CoordinatesUtil.intersects(boundaries, center));
   }
