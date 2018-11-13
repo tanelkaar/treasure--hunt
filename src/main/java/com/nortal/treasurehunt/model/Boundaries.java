@@ -32,4 +32,9 @@ public class Boundaries {
   public BigDecimal getMaxLng() {
     return maxLng;
   }
+
+  @Override
+  public String toString() {
+    return minLat + "," + minLng + " " + maxLat + "," + maxLng;
+  }
 }
