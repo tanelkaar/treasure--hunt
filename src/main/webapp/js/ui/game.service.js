@@ -5,7 +5,7 @@
         .module('treasurehunt.ui')
         .factory('GameService', GameService);
 
-    function GameService($q, $http) {
+    function GameService($q, $http, $cookies) {
         let _memberId;
         let _posWatcher = null;
         let _currentPos = null;
@@ -28,8 +28,31 @@
             startChallenge: startChallenge,
             completeChallenge: completeChallenge
         };
-        startTracking();
+        init();
         return service;
+        
+        function init() {
+          registerMember();
+          startTracking();
+        }
+
+        function getMember() {
+          return $cookies.get('token');
+        }
+
+        function registerMember() {
+          console.log('register member')
+          if (getMember()) {
+            return;
+          }
+          $http.get('/api/game/register-member').then((rsp) => {
+            console.log('got member: ', rsp.data);
+            //$cookies.put('memberId', rsp.data);
+          }, (e) => {
+            console.log('error registering as member: ', e);
+            //registerMember();
+          });
+        }
 
         function isCompatible() {
             return !!navigator.geolocation;

@@ -8,6 +8,7 @@ import com.nortal.treasurehunt.model.Team;
 import com.nortal.treasurehunt.service.GameService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import javax.annotation.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class GameController {
   @Resource
   private GameService gameService;
+
+  @GetMapping("/register-member")
+  public ResponseEntity<String> registerMember() {
+    String memberId = UUID.randomUUID().toString();
+    System.out.println(String.format("memberId: %s", memberId));
+    return ResponseEntity.ok("1");
+  }
 
   @GetMapping("/is-running")
   public ResponseEntity<Boolean> isRunning() {
