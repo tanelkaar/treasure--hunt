@@ -1,7 +1,7 @@
 package com.nortal.treasurehunt.model;
 
 public class Waypoint {
-  private Long challengeId;
+  private String challengeId;
   private Coordinates coords;
   private boolean visited;
 
@@ -10,11 +10,11 @@ public class Waypoint {
     this.coords = challenge.getCoordinates();
   }
 
-  public Long getChallengeId() {
+  public String getChallengeId() {
     return challengeId;
   }
 
-  public void setChallengeId(Long challengeId) {
+  public void setChallengeId(String challengeId) {
     this.challengeId = challengeId;
   }
 

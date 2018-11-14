@@ -1,17 +1,21 @@
 package com.nortal.treasurehunt.model;
 
-import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Game {
 
   private final String name;
   private final Coordinates startFinish;
-  private final List<Challenge> challenges;
-  private final List<Team> teams = new ArrayList<>();
+  private final Map<String, Challenge> challenges;
+  private final Map<String,Team> teamsByName = new HashMap<>();
+  private final Map<String,Team> teamsById = new HashMap<>();
 
   public Game(String name, Coordinates startFinish,
-      List<Challenge> challenges) {
+              Map<String, Challenge> challenges) {
     this.name = name;
     this.startFinish = startFinish;
     this.challenges = challenges;
@@ -25,15 +29,24 @@ public class Game {
     return startFinish;
   }
 
-  public List<Challenge> getChallenges() {
+  public Map<String, Challenge> getChallenges() {
     return challenges;
   }
 
-  public List<Team> getTeams() {
-    return teams;
+  public Team getTeamByName(String name) {
+    return teamsByName.get(name);
   }
 
-  public void addTeam(Team team) {
-    teams.add(team);
+  public List<Team> getTeamsOrderedByName() {
+    return teamsByName.values().stream()
+        .sorted(Comparator.comparing(Team::getName))
+        .collect(Collectors.toList());
+  }
+
+  public Map<String,Team> getTeamsById() { return teamsById; }
+
+  void addTeam(Team team) {
+    teamsByName.put(team.getName(), team);
+    teamsById.put(team.getId(), team);
   }
 }

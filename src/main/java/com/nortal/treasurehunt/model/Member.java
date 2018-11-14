@@ -2,8 +2,12 @@ package com.nortal.treasurehunt.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Member {
+
+  public Member() {
+  }
 
   private String id;
   private String name;

@@ -3,14 +3,20 @@ package com.nortal.treasurehunt.model;
 import com.nortal.treasurehunt.model.TeamChallenge.ChallengeState;
 import com.nortal.treasurehunt.util.CoordinatesUtil;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class Team {
 
   private final String name;
-  private final List<Member> members = new ArrayList<>();
+  private final String id;
+  private final Map<String,Member> members = new HashMap<>();
   private Member primaryMember;
-  private final List<Challenge> uncompletedChallenges;
+  private final Map<String, Challenge> uncompletedChallenges;
   private final List<TeamChallenge> completedChallenges = new ArrayList<>();
   private TeamChallenge currentChallenge;
   private TeamState state = TeamState.STARTING;
@@ -23,6 +29,8 @@ public class Team {
     this.primaryMember = primaryMember;
     this.game = game;
     this.uncompletedChallenges = game.getChallenges();
+    this.id = UUID.randomUUID().toString();
+    game.addTeam(this);
   }
 
   public enum TeamState {
@@ -31,16 +39,22 @@ public class Team {
     COMPLETED;
   }
 
+  public String getId() {
+    return id;
+  }
+
   public String getName() {
     return name;
   }
 
-  public List<Member> getMembers() {
-    return members;
+  public List<Member> getMembersOrderedByName() {
+    return members.values().stream()
+        .sorted(Comparator.comparing(Member::getName))
+        .collect(Collectors.toList());
   }
 
   public void addMember(Member member) {
-    this.members.add(member);
+    this.members.put(member.getId(), member);
     if (primaryMember == null) {
       primaryMember = member;
     }
@@ -110,7 +124,7 @@ public class Team {
     lastUpdateTimestamp = System.currentTimeMillis();
     // TODO - check if new coordinates intersect with uncompleted challenges
     if (currentChallenge == null) {
-      for (Challenge challenge : uncompletedChallenges) {
+      for (Challenge challenge : uncompletedChallenges.values()) {
         if (CoordinatesUtil.intersects(challenge.getBoundaries(), trailLog.getCoordinates())) {
           startChallenge(challenge);
           break;
@@ -120,11 +134,15 @@ public class Team {
   }
 
   public List<Challenge> getUncompletedChallenges() {
-    return uncompletedChallenges;
+    return new ArrayList<>(uncompletedChallenges.values());
   }
 
   public Game getGame() {
     return game;
+  }
+
+  public boolean hasMember(String memberId) {
+    return members.containsKey(memberId);
   }
 
 }

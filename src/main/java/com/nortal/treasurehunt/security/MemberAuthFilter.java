@@ -4,7 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.nortal.treasurehunt.model.Member;
-import com.nortal.treasurehunt.service.MemeberService;
+import com.nortal.treasurehunt.service.MemberService;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -22,7 +22,7 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 
 public class MemberAuthFilter extends AbstractAuthenticationProcessingFilter {
   @Resource
-  private MemeberService memberService;
+  private MemberService memberService;
 
   public MemberAuthFilter(String pattern) {
     super(pattern);
