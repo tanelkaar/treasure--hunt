@@ -1,25 +1,27 @@
 package com.nortal.treasurehunt.security;
 
+import com.nortal.treasurehunt.dto.MemberDTO;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 
 public class MemberAuth extends AbstractAuthenticationToken {
-  private String memberId;
-  private String jwt;
-
-  public MemberAuth(String memberId, String jwt) {
+  public MemberAuth(MemberDTO member) {
     super(null);
-    this.memberId = memberId;
-    this.jwt = jwt;
+    super.setDetails(member);
+    super.setAuthenticated(true);
   }
 
   @Override
   public Object getCredentials() {
-    return jwt;
+    return null;
   }
 
   @Override
   public Object getPrincipal() {
-    return memberId;
+    return null;
   }
 
+  @Override
+  public MemberDTO getDetails() {
+    return (MemberDTO) super.getDetails();
+  }
 }

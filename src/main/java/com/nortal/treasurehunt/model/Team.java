@@ -2,11 +2,12 @@ package com.nortal.treasurehunt.model;
 
 import com.nortal.treasurehunt.model.TeamChallenge.ChallengeState;
 import com.nortal.treasurehunt.util.CoordinatesUtil;
+import com.nortal.treasurehunt.util.IDUtil;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Team {
-
+  private Long id;
   private final String name;
   private final List<Member> members = new ArrayList<>();
   private Member primaryMember;
@@ -18,17 +19,24 @@ public class Team {
   private final List<TrailLog> trail = new ArrayList<>();
   private final Game game;
 
+  public Team(String name) {
+    this(name, null, null);
+  }
+
   public Team(String name, Member primaryMember, Game game) {
+    this.id = IDUtil.getNext();
     this.name = name;
     this.primaryMember = primaryMember;
     this.game = game;
-    this.uncompletedChallenges = game.getChallenges();
+    this.uncompletedChallenges = game != null ? game.getChallenges() : null;
   }
 
   public enum TeamState {
-    STARTING,
-    IN_PROGRESS,
-    COMPLETED;
+    STARTING, IN_PROGRESS, COMPLETED;
+  }
+
+  public Long getId() {
+    return id;
   }
 
   public String getName() {
@@ -125,6 +133,10 @@ public class Team {
 
   public Game getGame() {
     return game;
+  }
+
+  public Member getMember(String memberId) {
+    return members.stream().filter(m -> m.getId().equals(memberId)).findFirst().orElse(null);
   }
 
 }

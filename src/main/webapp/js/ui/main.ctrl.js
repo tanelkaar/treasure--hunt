@@ -1,36 +1,70 @@
 (function () {
-    'use strict'
+  'use strict'
 
-    angular
-        .module('treasurehunt.ui')
-        .controller('MainCtrl', MainCtrl);
+  angular
+    .module('treasurehunt.ui')
+    .controller('MainCtrl', MainCtrl);
 
-    function MainCtrl(isRunning, teams, $state, GameService) {
-        let ctrl = {
-            isRunning: isRunning,
-            mode: 'SELECT',
-            team: null,
-            teams: teams,
-            isCompatible: GameService.isCompatible,
-            startGame: startGame,
-            selectTeam: selectTeam
-        }
-        return ctrl = angular.extend(this, ctrl);
-
-        function startGame() {
-          GameService.startGame().then(() => {
-            ctrl.isRunning = true;
-          });
-        }
-
-        function selectTeam() {
-            console.log('select team');
-            if (_.isEmpty(ctrl.team)) {
-                return;
-            }
-            GameService.selectTeam(ctrl.team).then(() => {
-                $state.go('map');
-            });
-        }
+  function MainCtrl(games, $state, GameService) {
+    let ctrl = {
+      isCompatible: GameService.isCompatible,
+      game: null,
+      team: null,
+      games: games,
+      selectGame: selectGame,
+      selectTeam: selectTeam,
+      addGame: addGame,
+      addTeam: addTeam,
+      reset: reset,
+      start: start
     }
+    return ctrl = angular.extend(this, ctrl);
+
+    function selectGame(game) {
+      ctrl.game = game;
+      _.each(ctrl.games, (g) => {
+        if (game.id != g.id) {
+          g.selected = false;
+        }
+      });
+    }
+
+    function selectTeam(team) {
+      ctrl.team = team;
+      _.each(ctrl.game.teams, (t) => {
+        if (team.id != t.id) {
+          t.selected = false;
+        }
+      });
+    }
+
+    function addGame(name) {
+      GameService.addGame(name).then((rsp) => {
+        ctrl.games.push(rsp.data);
+      });
+    }
+
+    function addTeam(name) {
+      GameService.addTeam(ctrl.game.id, name).then((rsp) => {
+        ctrl.game.teams.push(rsp.data);
+      });
+    }
+
+    function reset() {
+      if (ctrl.game) {
+        ctrl.game.selected = false;
+        ctrl.game = null;
+      }
+      if (ctrl.team) {
+        ctrl.team.selected = false;
+        ctrl.team = null;
+      }
+    }
+
+    function start() {
+      GameService.startGame(ctrl.game.id, ctrl.team.id).then(() => {
+        $state.go('map');
+      });
+    }
+  }
 })();

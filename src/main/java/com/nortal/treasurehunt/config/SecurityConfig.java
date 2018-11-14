@@ -2,6 +2,7 @@ package com.nortal.treasurehunt.config;
 
 import com.nortal.treasurehunt.security.MemberAuthFilter;
 import com.nortal.treasurehunt.security.MemberAuthProvider;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -34,6 +35,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(AuthenticationManagerBuilder authManagerBuilder) throws Exception {
     authManagerBuilder.authenticationProvider(authProvider());
+  }
+
+  @Bean
+  public FilterRegistrationBean<MemberAuthFilter> filterRegistrationBean() throws Exception {
+    FilterRegistrationBean<MemberAuthFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+    filterRegistrationBean.setEnabled(false);
+    filterRegistrationBean.setFilter(memberAuthFilter());
+    return filterRegistrationBean;
   }
 
   @Bean
