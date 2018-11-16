@@ -9,5 +9,10 @@
   <system-properties>
     <property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
   </system-properties>
+  
+  <static-files>
+    <include path="/**.js" expiration="1m" />
+    <include path="/**.html" expiration="1m" />
+  </static-files>
 
 </appengine-web-app>
