@@ -1,4 +1,4 @@
-<div map-lazy-load="https://maps.google.com/maps/api/js"><!-- map-lazy-load-params="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGEtCoDKLLD83seTo6KaXv5T31giUwHDo" -->
+<div map-lazy-load="https://maps.google.com/maps/api/js" map-lazy-load-params="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGEtCoDKLLD83seTo6KaXv5T31giUwHDo">
   <ng-map center="current-location" zoom="15" default-style="false" style="width:100%; height:100%; position: absolute;">
     <marker data-ng-repeat="waypoint in ctrl.waypoints"
         title="{{waypoint.name}}"
