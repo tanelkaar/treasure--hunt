@@ -16,7 +16,6 @@
                 type="radio"
                 class="form-check-input"
                 value="true"
-                required="true"
                 data-ng-model="game.selected"
                 data-ng-click="ctrl.selectGame(game)">
                 <label class="form-check-label" for="{{game.id}}">{{game.name}}</label>
@@ -38,7 +37,7 @@
               data-ng-class="{'is-valid': form.gameName.$valid,'is-invalid': form.gameName.$invalid}"
               data-ng-model="ctrl.gameName" />
             <div class="input-group-append">
-              <button type="button" class="btn btn-outline-secondary" data-ng-click="ctrl.addGame(ctrl.gameName)" data-ng-disabled="form.$submitted">+</button>
+              <button type="button" class="btn btn-outline-secondary" data-ng-click="ctrl.addGame(ctrl.gameName)" data-ng-disabled="form.$invalid">+</button>
             </div>
           </div>
         </div>
@@ -57,7 +56,6 @@
                 type="radio"
                 class="form-check-input"
                 value="true"
-                required="true"
                 data-ng-model="team.selected"
                 data-ng-click="ctrl.selectTeam(team)">
                 <label class="form-check-label" for="{{team.id}}">{{team.name}}</label>
@@ -79,7 +77,7 @@
               data-ng-class="{'is-valid': form.teamName.$valid,'is-invalid': form.teamName.$invalid}"
               data-ng-model="ctrl.teamName" />
             <div class="input-group-append">
-              <button type="button" class="btn btn-outline-secondary" data-ng-click="ctrl.addTeam(ctrl.teamName)" data-ng-disabled="form.$submitted">+</button>
+              <button type="button" class="btn btn-outline-secondary" data-ng-click="ctrl.addTeam(ctrl.teamName)" data-ng-disabled="form.$invalid">+</button>
             </div>
           </div>
         </div>

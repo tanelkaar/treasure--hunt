@@ -76,6 +76,19 @@
       return $http.get('/api/game/map');
     }
 
+    function startChallenge(id) {
+      return getCurrentPos().then((pos) => {
+        return $http.post('/api/game/challenge/' + id + '/start', pos);
+      });
+    }
+
+    function completeChallenge(response) {
+      return getCurrentPos().then((pos) => {
+        response.coords = pos;
+        return $http.post('/api/game/challenge/' + response.challengeId + '/complete', response);
+      });
+    }
+
     function startTracking() {
       console.log('start tracking');
       if (!isCompatible() || _posWatcher) {
@@ -121,16 +134,6 @@
         getCurrentPos();
       }, _posOpts);
       return _posDefer.promise;
-    }
-
-    function startChallenge(id) {
-      return getCurrentPos().then((pos) => {
-        return $http.post('/api/game/member/' + _memberId + '/challenge/' + id, pos);
-      });
-    }
-
-    function completeChallenge(challenge) {
-      // TODO
     }
   }
 })();

@@ -75,30 +75,22 @@
         }
       },
       resolve: {
-        challenge: ($q, $stateParams, GameService) => {
+        challenge: ($stateParams, GameService) => {
           console.log('challenge resolve');
-          //return GameService.startChallenge($stateParams.id).then((rsp) => {
-          //  return rsp.data;
-          //});
-          let textChallenge = { id: 1, type: 'IMAGE', question: 'Which came first - the chicken or the egg?' };
-          let defer = $q.defer();
-          defer.resolve(textChallenge);
-          return defer.promise;
+          return GameService.startChallenge($stateParams.id).then((rsp) => {
+            return rsp.data;
+          });
         }
       }
     });
     $urlRouterProvider.otherwise('main');
   }
 
-  function run($rootScope, $state, MemberService, GameService) {
+  function run($rootScope, $state, MemberService) {
     $rootScope.$on('$stateChangeStart', (event, toState, toParams, fromState, fromParams, options) => {
       if (toState.name != 'main' && !MemberService.isRegistered()) {
         event.preventDefault();
         $state.go('main');
-        return;
-      }
-
-      if (toState.name === 'challenge') {
         return;
       }
 

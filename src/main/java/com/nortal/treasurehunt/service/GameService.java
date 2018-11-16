@@ -1,20 +1,27 @@
 package com.nortal.treasurehunt.service;
 
+import com.nortal.treasurehunt.TreasurehuntException;
 import com.nortal.treasurehunt.dto.GameDTO;
 import com.nortal.treasurehunt.dto.MemberDTO;
 import com.nortal.treasurehunt.dto.TeamDTO;
+import com.nortal.treasurehunt.enums.ChallengeAnswerType;
+import com.nortal.treasurehunt.enums.ChallengeType;
+import com.nortal.treasurehunt.enums.ErrorCode;
 import com.nortal.treasurehunt.model.Challenge;
-import com.nortal.treasurehunt.model.Challenge.ChallengeType;
+import com.nortal.treasurehunt.model.ChallengeOption;
+import com.nortal.treasurehunt.model.ChallengeResponse;
 import com.nortal.treasurehunt.model.Coordinates;
 import com.nortal.treasurehunt.model.Game;
 import com.nortal.treasurehunt.model.GameConfig;
 import com.nortal.treasurehunt.model.GameMap;
 import com.nortal.treasurehunt.model.Team;
-import com.nortal.treasurehunt.model.Waypoint;
+import com.nortal.treasurehunt.util.IDUtil;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Resource;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -27,13 +34,11 @@ public class GameService {
   private List<Game> games = new ArrayList<>();
   // private Game game;
 
-  private boolean isValidForGame(MemberDTO member) {
-    return member != null && member.getMemberId() != null && member.getGameId() != null && member.getTeamId() != null;
-  }
-
   private void validate(MemberDTO member) {
-    System.out
-        .println(String.format("validate: %s %d %d", member.getMemberId(), member.getGameId(), member.getTeamId()));
+    if (member == null) {
+      throw new TreasurehuntException(ErrorCode.INVALID_MEMBER);
+    }
+
     boolean valid = false;
     try {
       valid = getGame(member.getGameId()).getTeam(member.getTeamId()).getMember(member.getMemberId()) != null;
@@ -41,7 +46,11 @@ public class GameService {
       e.printStackTrace();
     }
     if (!valid) {
-      throw new RuntimeException("Member info is invalid!");
+      throw new TreasurehuntException(ErrorCode.INVALID_MEMBER,
+          String.format("invalid member: gameId=%d, teamId=%d, memberId=%s",
+              member.getGameId(),
+              member.getTeamId(),
+              member.getMemberId()));
     }
   }
 
@@ -51,6 +60,7 @@ public class GameService {
       result.add(convert(g));
     });
     return result;
+
   }
 
   private GameDTO convert(Game game) {
@@ -63,6 +73,7 @@ public class GameService {
     });
     result.setTeams(teams);
     return result;
+
   }
 
   private TeamDTO convert(Team team) {
@@ -81,92 +92,98 @@ public class GameService {
           .filter(g -> StringUtils.equalsIgnoreCase(g.getName(), config.getName()))
           .findFirst()
           .orElse(null);
-      if (game == null) {
-        game = new Game(config.getName(), config.getStart(), this.generateChallenges(config.getStart()));
-        this.games.add(game);
+      if (game != null) {
+        throw new TreasurehuntException(ErrorCode.GAME_EXISTS);
       }
+      List<Challenge> challenges = CollectionUtils.isNotEmpty(config.getChallenges()) ? config.getChallenges()
+          : generateChallenges(config.getStart());
+      game = new Game(config.getName(), config.getStart(), challenges);
+      this.games.add(game);
     }
     return convert(game);
   }
 
   public TeamDTO addTeam(Long gameId, TeamDTO team) {
-    if ( gameId == null || team == null) {
-      return null;
-    }
-    Game game = this.getGame(gameId);
-    if (game == null) {
-      return null;
-    }
-    Team t = game.getTeams()
-        .stream()
-        .filter(i -> StringUtils.equalsIgnoreCase(i.getName(), team.getName()))
-        .findFirst()
-        .orElse(null);
-
-    if (t == null) {
-      game.getTeams().add(t = new Team(team.getName()));
-      team.setId(t.getId());
-    }
-    return team;
+    return this. getGame(gameId).addTeam(team);
   }
 
   public void start(MemberDTO member) {
-    if (!isValidForGame(member)) {
-      return;
-    }
-    this.getGame(member.getGameId())
-        .getTeam(member.getTeamId())
-        .addMember(memberService.getMember(member.getMemberId()));
+    getGame(member.getGameId()).addMember(member.getTeamId(), memberService.getMember(member.getMemberId()));
+  }
+
+  public GameMap getMap(MemberDTO member) {
+    validate(member);
+    return getGame(member.getGameId()).getMap(member.getTeamId());
+  }
+
+  public Challenge startChallenge(MemberDTO member, Long challengeId, Coordinates coords) {
+    validate(member);
+    return getGame(member.getGameId()).startChallenge(member.getTeamId(), challengeId, coords);
+  }
+
+  public void completeChallenge(MemberDTO member, ChallengeResponse response) {
+    validate(member);
+    getGame(member.getGameId()).completeChallenge(member.getTeamId(), response);
   }
 
   private Game getGame(Long gameId) {
     return games.stream().filter(g -> g.getId().equals(gameId)).findFirst().orElse(null);
   }
 
-  // public boolean isRunning() {
-  // return game != null;
-  // }
-  //
-  // public void startGame(GameConfig config) {
-  // if (config == null) {
-  // return;
-  // }
-  // this.game = new Game(config.getName(), config.getStart(),
-  // generateChallenges(config.getStart()));
-  // }
-  //
-  // public Long selectTeam() {
-  // if (!isRunning()) {
-  // return null;
-  // }
-  // return 1L; // TODO: this should create/select team and member somehow
-  // }
-  //
-  public GameMap getMap(MemberDTO member) {
-    validate(member);
-    Game game = this.getGame(member.getGameId());
-    List<Waypoint> waypoints = new ArrayList<>();
-    game.getChallenges().forEach(c -> {
-      // TODO: figure out visited by member
-      waypoints.add(new Waypoint(c));
-    });
-    return new GameMap(game.getStartFinish(), waypoints);
-  }
-
   private List<Challenge> generateChallenges(Coordinates coords) {
     List<Challenge> challenges = new ArrayList<>();
     for (int i = 0; i <= 5; i++) {
-      challenges.add(new Challenge(Long.valueOf(i),
-          "challenge" + i,
-          new Coordinates(getRandomPos(coords.getLat()), getRandomPos(coords.getLng())),
-          ChallengeType.values()[(int) Math.random() * 3],
-          "text"));
+      Challenge c = new Challenge();
+      BeanUtils.copyProperties(tempChallenges.get((int) (Math.random() * 5)), c);
+      c.setId(IDUtil.getNext());
+      c.setCoordinates(new Coordinates(getPos(coords.getLat()), getPos(coords.getLng())));
+      challenges.add(c);
     }
     return challenges;
   }
 
-  private BigDecimal getRandomPos(BigDecimal pos) {
-    long multip = ((int) Math.random() * 2) % 2 == 0 ? 1 : -1;
+  private BigDecimal getPos(BigDecimal pos) {
+    long multip = ((int) (Math.random() * 2)) % 2 == 0 ? 1 : -1;
     return pos.add(BigDecimal.valueOf(Math.random() / 500).multiply(BigDecimal.valueOf(multip)));
+  }
+
+  List<Challenge> tempChallenges = new ArrayList<>();
+  {
+    Challenge c = new Challenge();
+    c.setType(ChallengeType.QUESTION);
+    c.setText("Kus on pilt tehtud?");
+    c.setImage("https://drive.google.com/uc?id=1z8i7Hurg0oq3deTziNbjoGg1iAKkkmr0");
+    c.setAnswerType(ChallengeAnswerType.TEXT);
+    tempChallenges.add(c);
+
+    c = new Challenge();
+    c.setType(ChallengeType.QUESTION);
+    c.setText("Kumb oli enne, kas muna või kana?");
+    c.setOptions(
+        Arrays.asList(new ChallengeOption(IDUtil.getNext(), "kana"), new ChallengeOption(IDUtil.getNext(), "muna")));
+    c.setAnswerType(ChallengeAnswerType.SINGLE_CHOICE);
+    tempChallenges.add(c);
+
+    c = new Challenge();
+    c.setType(ChallengeType.QUESTION);
+    c.setText("Kessee laulab köögis?");
+    c.setVideo("https://www.youtube.com/embed/FIH5gF1z4SY?rel=0");
+    c.setOptions(Arrays.asList(new ChallengeOption(IDUtil.getNext(), "kukk"),
+        new ChallengeOption(IDUtil.getNext(), "kana"),
+        new ChallengeOption(IDUtil.getNext(), "justament")));
+    c.setAnswerType(ChallengeAnswerType.MULTI_CHOICE);
+    tempChallenges.add(c);
+
+    c = new Challenge();
+    c.setType(ChallengeType.TASK);
+    c.setText("Mõtle välja mingi äge luuletus!");
+    c.setAnswerType(ChallengeAnswerType.TEXT);
+    tempChallenges.add(c);
+
+    c = new Challenge();
+    c.setType(ChallengeType.TASK);
+    c.setText("Tee meeskonnast pilt!");
+    c.setAnswerType(ChallengeAnswerType.IMAGE);
+    tempChallenges.add(c);
   }
 }

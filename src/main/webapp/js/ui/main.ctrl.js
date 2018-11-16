@@ -40,12 +40,14 @@
 
     function addGame(name) {
       GameService.addGame(name).then((rsp) => {
+        ctrl.gameName = null;
         ctrl.games.push(rsp.data);
       });
     }
 
     function addTeam(name) {
       GameService.addTeam(ctrl.game.id, name).then((rsp) => {
+        ctrl.teamName = null;
         ctrl.game.teams.push(rsp.data);
       });
     }

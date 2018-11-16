@@ -21,24 +21,11 @@ public class GameMap {
     return start;
   }
 
-  public void setStart(Coordinates start) {
-    this.start = start;
-  }
-
   public Coordinates getFinish() {
     return finish;
-  }
-
-  public void setFinish(Coordinates finish) {
-    this.finish = finish;
   }
 
   public List<Waypoint> getWaypoints() {
     return waypoints;
   }
-
-  public void setWaypoints(List<Waypoint> waypoints) {
-    this.waypoints = waypoints;
-  }
-
 }

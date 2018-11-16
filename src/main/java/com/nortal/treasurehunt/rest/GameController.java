@@ -3,6 +3,9 @@ package com.nortal.treasurehunt.rest;
 import com.nortal.treasurehunt.dto.GameDTO;
 import com.nortal.treasurehunt.dto.MemberDTO;
 import com.nortal.treasurehunt.dto.TeamDTO;
+import com.nortal.treasurehunt.model.Challenge;
+import com.nortal.treasurehunt.model.ChallengeResponse;
+import com.nortal.treasurehunt.model.Coordinates;
 import com.nortal.treasurehunt.model.GameConfig;
 import com.nortal.treasurehunt.model.GameMap;
 import com.nortal.treasurehunt.security.MemberAuth;
@@ -62,41 +65,21 @@ public class GameController {
     return ResponseEntity.ok(gameService.getMap(getAuthMember()));
   }
 
+  @PostMapping("/game/challenge/{challengeId}/start")
+  public ResponseEntity<Challenge> startChallenge(@PathVariable("challengeId") Long challengeId,
+      @RequestBody Coordinates coords) {
+    return ResponseEntity.ok(gameService.startChallenge(getAuthMember(), challengeId, coords));
+  }
+
+  @PostMapping("/game/challenge/{challengeId}/complete")
+  @ResponseStatus(code = HttpStatus.OK)
+  public void completeChallenge(@PathVariable("challengeId") Long challengeId,
+      @RequestBody ChallengeResponse response) {
+    response.setChallengeId(challengeId);
+    gameService.completeChallenge(getAuthMember(), response);
+  }
+
   private MemberDTO getAuthMember() {
     return ((MemberAuth) SecurityContextHolder.getContext().getAuthentication()).getDetails();
   }
-
-  // @GetMapping("/is-running")
-  // public ResponseEntity<Boolean> isRunning() {
-  // return ResponseEntity.ok(gameService.isRunning());
-  // }
-  //
-  // @PostMapping("/start")
-  // public void start(@RequestBody GameConfig config) {
-  // gameService.startGame(config);
-  // }
-  //
-  // @GetMapping("/teams")
-  // public ResponseEntity<List<Team>> getTeams() {
-  // return ResponseEntity.ok(new ArrayList<>()); // TODO: implement meh
-  // }
-  //
-  // @PostMapping("/select-team")
-  // public ResponseEntity<Long> selectTeam(@RequestBody String rawTeam) {
-  // return ResponseEntity.ok(gameService.selectTeam());
-  // }
-  //
-  // @GetMapping("/member/{memberId}/map")
-  // public ResponseEntity<GameMap> getMap(@PathVariable("memberId") Long
-  // memberId) {
-  // return ResponseEntity.ok(gameService.getMap(memberId));
-  // }
-  //
-  // @PostMapping("/member/{memberId}/challenge/{challengeId}")
-  // public ResponseEntity<Challenge> startChallenge(@PathVariable("memberId")
-  // Long memberId,
-  // @PathVariable("challengeId") Long challengeId,
-  // @RequestBody Coordinates coords) {
-  // return ResponseEntity.ok(null); // TODO: implement meh
-  // }
 }

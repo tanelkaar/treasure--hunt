@@ -1,53 +1,84 @@
 package com.nortal.treasurehunt.model;
 
+import com.nortal.treasurehunt.enums.ChallengeAnswerType;
+import com.nortal.treasurehunt.enums.ChallengeType;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Challenge {
+  public static final int CHALLENGE_BOUNDARIES_MARGIN_METERS = 20;
 
-  private static final int CHALLENGE_BOUNDARIES_MARGIN_METERS = 10;
-
-  private final Long id;
-  private final String name;
-  private final Coordinates coordinates;
-  private final Boundaries boundaries;
-  private final ChallengeType type;
-  private final String text;
-
-  public enum ChallengeType {
-    TEXT,
-    CHOICE,
-    PICTURE;
-  }
-
-  public Challenge(Long id, String name, Coordinates coordinates, ChallengeType type, String text) {
-    this.id = id;
-    this.name = name;
-    this.coordinates = coordinates;
-    this.type = type;
-    this.text = text;
-    this.boundaries = new Boundaries(coordinates, CHALLENGE_BOUNDARIES_MARGIN_METERS);
-  }
+  private Long id;
+  private Coordinates coordinates;
+  private String text;
+  private ChallengeType type;
+  private ChallengeAnswerType answerType;
+  private String image;
+  private String video;
+  private List<ChallengeOption> options = new ArrayList<>();
 
   public Long getId() {
     return id;
   }
 
-  public String getName() {
-    return name;
+  public void setId(Long id) {
+    this.id = id;
   }
 
   public Coordinates getCoordinates() {
     return coordinates;
   }
 
-  public ChallengeType getType() {
-    return type;
+  public void setCoordinates(Coordinates coordinates) {
+    this.coordinates = coordinates;
   }
 
   public String getText() {
     return text;
   }
 
-  public Boundaries getBoundaries() {
-    return boundaries;
+  public void setText(String text) {
+    this.text = text;
+  }
+
+  public ChallengeType getType() {
+    return type;
+  }
+
+  public void setType(ChallengeType type) {
+    this.type = type;
+  }
+
+  public ChallengeAnswerType getAnswerType() {
+    return answerType;
+  }
+
+  public void setAnswerType(ChallengeAnswerType answerType) {
+    this.answerType = answerType;
+  }
+
+  public String getImage() {
+    return image;
+  }
+
+  public void setImage(String image) {
+    this.image = image;
+  }
+
+  public String getVideo() {
+    return video;
+  }
+
+  public void setVideo(String video) {
+    this.video = video;
+  }
+
+  public List<ChallengeOption> getOptions() {
+    return options;
+  }
+
+  public void setOptions(List<ChallengeOption> options) {
+    this.options = options;
   }
 
 }
