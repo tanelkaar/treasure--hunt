@@ -7,10 +7,14 @@
     .factory('authInterceptor', authInterceptor)
     .config(config);
 
+  function config($httpProvider) {
+    $httpProvider.interceptors.push('authInterceptor');
+  }
+
   function authInterceptor($cookies, MemberService) {
     return {
       response: (rsp) => {
-        if ($cookies.get('auth-token')) {
+        if (rsp.config.url.startsWith('/api/') && $cookies.get('auth-token')) {
           MemberService.init($cookies.get('auth-token'));
         }
         return rsp;
@@ -18,7 +22,7 @@
     };
   }
 
-  function MemberService($cookies, jwtHelper) {
+  function MemberService(jwtHelper) {
     let _auth;
     let _authToken;
 
@@ -70,9 +74,5 @@
     function hasTeam() {
       return !!getTeamId();
     }
-  }
-
-  function config($httpProvider) {
-    $httpProvider.interceptors.push('authInterceptor');
   }
 })();

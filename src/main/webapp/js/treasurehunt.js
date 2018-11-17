@@ -4,8 +4,9 @@
         .module('treasurehunt', [
             'ui.router',
             'ui.bootstrap',
-            'angular-jwt',
             'ngCookies',
+            'angular-jwt',
+            'ngToast',
             'ngMap',
             'treasurehunt.ui'
         ]);

@@ -132,8 +132,13 @@ public class GameService {
 
   private List<Challenge> generateChallenges(Coordinates coords) {
     List<Challenge> challenges = new ArrayList<>();
+    Challenge c = new Challenge();
+    BeanUtils.copyProperties(tempChallenges.get((int) (Math.random() * 5)), c);
+    c.setId(IDUtil.getNext());
+    c.setCoordinates(coords);
+    challenges.add(c);
     for (int i = 0; i <= 5; i++) {
-      Challenge c = new Challenge();
+      c = new Challenge();
       BeanUtils.copyProperties(tempChallenges.get((int) (Math.random() * 5)), c);
       c.setId(IDUtil.getNext());
       c.setCoordinates(new Coordinates(getPos(coords.getLat()), getPos(coords.getLng())));

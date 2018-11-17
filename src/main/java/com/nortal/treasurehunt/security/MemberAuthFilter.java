@@ -32,8 +32,8 @@ public class MemberAuthFilter extends AbstractAuthenticationProcessingFilter {
   private static final String AUHT_TOKEN = "auth-token";
   private static final Algorithm ALGORITHM = Algorithm.HMAC256("treasurehunt");
 
-  public MemberAuthFilter(String pattern) {
-    super(pattern);
+  public MemberAuthFilter(String path) {
+    super(path);
   }
 
   @Override
