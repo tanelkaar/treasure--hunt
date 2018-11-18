@@ -1,6 +1,5 @@
 package com.nortal.treasurehunt.model;
 
-import com.google.appengine.repackaged.org.apache.commons.codec.binary.StringUtils;
 import com.nortal.treasurehunt.TreasurehuntException;
 import com.nortal.treasurehunt.dto.MemberDTO;
 import com.nortal.treasurehunt.enums.ErrorCode;
@@ -12,12 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Team {
   private static final Logger LOG = LoggerFactory.getLogger(Team.class);
-  private static final long LOG_UPDATE_INTERVAL = 25;
+  private static final long LOG_UPDATE_INTERVAL = 15;
   private static final long PRIMARY_MEMBER_TIMEOUT = 60;
 
   private Long id;

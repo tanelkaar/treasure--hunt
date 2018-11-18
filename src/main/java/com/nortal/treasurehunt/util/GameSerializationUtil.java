@@ -1,6 +1,6 @@
 package com.nortal.treasurehunt.util;
 
-import com.google.appengine.repackaged.com.google.gson.Gson;
+import com.google.gson.Gson;
 import com.nortal.treasurehunt.model.Game;
 
 public class GameSerializationUtil {

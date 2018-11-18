@@ -1,6 +1,6 @@
 package com.nortal.treasurehunt.serialization;
 
-import com.google.appengine.repackaged.com.google.gson.Gson;
+import com.google.gson.Gson;
 import com.nortal.treasurehunt.enums.ChallengeAnswerType;
 import com.nortal.treasurehunt.model.Challenge;
 import com.nortal.treasurehunt.model.ChallengeOption;
@@ -10,14 +10,13 @@ import com.nortal.treasurehunt.model.Member;
 import com.nortal.treasurehunt.model.Team;
 import com.nortal.treasurehunt.model.TrailLog;
 import com.nortal.treasurehunt.util.GameSerializationUtil;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+import org.junit.Test;
 
 public class GameSerializationUtilTest {
   @Test
