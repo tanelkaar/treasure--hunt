@@ -2,15 +2,13 @@ package com.nortal.treasurehunt.model;
 
 public class TeamChallenge {
 
-  private final Team team;
   private final Challenge challenge;
   private long startTimestamp;
   private long endTimestamp;
   private ChallengeState state;
   private String result;
 
-  public TeamChallenge(Team team, Challenge challenge) {
-    this.team = team;
+  public TeamChallenge(Challenge challenge) {
     this.challenge = challenge;
   }
 
@@ -57,9 +55,5 @@ public class TeamChallenge {
 
   public void setResult(String result) {
     this.result = result;
-  }
-
-  public Team getTeam() {
-    return team;
   }
 }

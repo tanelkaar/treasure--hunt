@@ -6,12 +6,15 @@ import com.nortal.treasurehunt.dto.TeamDTO;
 import com.nortal.treasurehunt.model.Challenge;
 import com.nortal.treasurehunt.model.ChallengeResponse;
 import com.nortal.treasurehunt.model.Coordinates;
+import com.nortal.treasurehunt.model.Game;
 import com.nortal.treasurehunt.model.GameConfig;
 import com.nortal.treasurehunt.model.GameMap;
 import com.nortal.treasurehunt.security.MemberAuth;
 import com.nortal.treasurehunt.service.GameService;
 import java.util.List;
 import javax.annotation.Resource;
+
+import com.nortal.treasurehunt.util.GameSerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -87,6 +91,18 @@ public class GameController {
   @ResponseStatus(code = HttpStatus.OK)
   public void completeChallenge(@RequestBody Coordinates coords) {
     gameService.sendLocation(getAuthMember(), coords);
+  }
+
+  @RequestMapping(value = "/game/{gameId}/export", method = RequestMethod.GET, produces = "application/json")
+  public String exportGame(@PathVariable Long gameId){
+    return GameSerializationUtil.serializeToJSON(gameService.getGame(gameId));
+  }
+
+  @PostMapping("/game/import")
+  @ResponseStatus(code = HttpStatus.OK)
+  public void importGame(@RequestBody String jsonGameData) {
+    Game game = GameSerializationUtil.deserializeFromJSON(jsonGameData);
+    gameService.addGame(game);
   }
 
   private MemberDTO getAuthMember() {

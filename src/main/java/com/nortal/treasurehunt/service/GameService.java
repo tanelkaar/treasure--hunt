@@ -103,6 +103,10 @@ public class GameService {
     return convert(game);
   }
 
+  public void addGame(Game game) {
+    games.add(game);
+  }
+
   public TeamDTO addTeam(Long gameId, TeamDTO team) {
     return this. getGame(gameId).addTeam(team);
   }
@@ -130,7 +134,7 @@ public class GameService {
     getGame(authMember.getGameId()).sendLocation(authMember, coords);
   }
 
-  private Game getGame(Long gameId) {
+  public Game getGame(Long gameId) {
     return games.stream().filter(g -> g.getId().equals(gameId)).findFirst().orElse(null);
   }
 

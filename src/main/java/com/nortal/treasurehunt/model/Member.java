@@ -7,7 +7,6 @@ public class Member {
 
   private String id;
   private String name;
-  private Team team;
   private final List<TrailLog> trail = new ArrayList<>();
 
   public String getId() {
@@ -24,14 +23,6 @@ public class Member {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-  public Team getTeam() {
-    return team;
-  }
-
-  public void setTeam(Team team) {
-    this.team = team;
   }
 
   public void logTrail(TrailLog trailLog) {

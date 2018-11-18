@@ -1,0 +1,71 @@
+{
+  "id": 1,
+  "name": "game1",
+  "startFinish": {
+    "lat": 0,
+    "lng": -77.988496046
+  },
+  "challenges": [
+    {
+      "coordinates": {
+        "lat": 80.00068648,
+        "lng": 70.988496046
+      },
+      "text": "challengeText1",
+      "answerType": "TEXT",
+      "options": [
+        {
+          "id": 1,
+          "text": "opt1"
+        }
+      ]
+    }
+  ],
+  "teams": [
+    {
+      "id": 2,
+      "name": "team1",
+      "members": [
+        {
+          "id": "id1",
+          "name": "Member Name I",
+          "trail": []
+        }
+      ],
+      "completedChallenges": [],
+      "state": "STARTING",
+      "lastUpdateTimestamp": 1542536783636,
+      "trail": [
+        {
+          "coordinates": {
+            "lat": -65.0014,
+            "lng": 99.4378
+          },
+          "date": "Nov 18, 2018 12:26:23 PM"
+        }
+      ],
+      "responses": []
+    },
+    {
+      "id": 3,
+      "name": "teäm2",
+      "members": [
+        {
+          "id": "id2",
+          "name": "name2",
+          "trail": []
+        },
+        {
+          "id": "id3",
+          "name": "awefaw",
+          "trail": []
+        }
+      ],
+      "completedChallenges": [],
+      "state": "STARTING",
+      "lastUpdateTimestamp": 0,
+      "trail": [],
+      "responses": []
+    }
+  ]
+}
