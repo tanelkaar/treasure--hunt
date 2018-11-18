@@ -3,6 +3,14 @@
 
   angular
     .module('treasurehunt.ui')
+    .constant('MESSAGE_CODES', {
+      'UNEXPECTED_ERROR': 'Ootamatu viga!',
+      'INVALID_INPUT': 'Ebakorrektne sisend!',
+      'GAME_EXISTS': 'Sellise nimega mäng on juba olemas!',
+      'TEAM_EXISTS': 'Sellise nimega meeskond on juba olemas!',
+      'INVALID_MEMBER': 'Ebakorretne mängu osaline!',
+      'CHALLENGE_COMPLETED': 'Ülesanne on juba lahendatud!'
+    })
     .factory('MessageService', MessageService)
     .factory('errorInterceptor', errorInterceptor)
     .config(config);
@@ -18,18 +26,19 @@
     });
   }
 
-  function errorInterceptor($q, MessageService) {
+  function errorInterceptor($q, MessageService, MESSAGE_CODES) {
     return {
       responseError: function (rsp) {
         if (rsp.data) {
-          MessageService.showError({ code: rsp.data.errorCode });
+          let code = rsp.data.errorCode;
+          MessageService.showError({ text: MESSAGE_CODES[code] || MESSAGE_CODES.UNEXPECTED_ERROR });
         }
         return $q.reject(rsp);
       }
     };
   }
 
-  function MessageService(ngToast) {
+  function MessageService(ngToast, MESSAGE_CODES) {
     let service = {
       showSuccess: showSuccess,
       showInfo: showInfo,
@@ -56,11 +65,11 @@
       if (!msg || (!msg.text && !msg.code)) {
         return;
       }
-      console.log('MESSAGE: ', msg);
+      let text = msg.code ? MESSAGE_CODES[msg.code] : msg.text;
       ngToast.create({
         className: msg.class,
         //dismissOnTimeout: false,
-        content: msg.code || msg.text
+        content: text
       });
     }
   }

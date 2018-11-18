@@ -5,8 +5,7 @@
     .module('treasurehunt.ui')
     .factory('GameService', GameService);
 
-  function GameService($q, $http, $cookies, MemberService) {
-    let _memberId;
+  function GameService($q, $http, MemberService) {
     let _posWatcher = null;
     let _currentPos = null;
     let _posOpts = {
@@ -100,6 +99,10 @@
           lat: pos.coords.latitude,
           lng: pos.coords.longitude
         };
+
+        if (MemberService.hasGame()) {
+          $http.post('/api/game/send-location', _currentPos);
+        }
       }, (err) => {
         console.error('error watching current pos: ', err);
       }, _posOpts);

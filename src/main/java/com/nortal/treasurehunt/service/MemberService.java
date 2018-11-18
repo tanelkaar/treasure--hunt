@@ -5,22 +5,25 @@ import com.nortal.treasurehunt.model.Member;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MemberService {
+  private static final Logger LOG = LoggerFactory.getLogger(MemberService.class);
+
   private List<Member> members = new ArrayList<>();
 
   public boolean isValid(MemberDTO member) {
     if (member == null || member.getMemberId() == null) {
       return false;
     }
-    System.out.println(String.format("is valid: %s %d", member.getMemberId(), members.size()));
     return getMember(member.getMemberId()) != null;
   }
 
   public Member createMember() {
-    System.out.println("create: " + members.size());
+    LOG.info("Creating new member - having {} members so far", members.size());
     Member member = new Member();
     member.setId(UUID.randomUUID().toString());
     synchronized (members) {

@@ -93,7 +93,6 @@ public class MemberAuthFilter extends AbstractAuthenticationProcessingFilter {
       FilterChain chain,
       Authentication authResult) throws IOException, ServletException {
     SecurityContextHolder.getContext().setAuthentication(authResult);
-    System.out.println("is authenticated: " + authResult.isAuthenticated());
     chain.doFilter(request, response);
 
     refreshAuthCookie(request, response);

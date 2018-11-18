@@ -1,11 +1,13 @@
 package com.nortal.treasurehunt.model;
 
 import com.nortal.treasurehunt.TreasurehuntException;
+import com.nortal.treasurehunt.dto.MemberDTO;
 import com.nortal.treasurehunt.dto.TeamDTO;
 import com.nortal.treasurehunt.enums.ErrorCode;
 import com.nortal.treasurehunt.util.IDUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
 public class Game {
@@ -90,5 +92,16 @@ public class Game {
 
   public void completeChallenge(Long teamId, ChallengeResponse response) {
     getTeam(teamId).completeChallenge(response);
+  }
+
+  public void sendLocation(MemberDTO authMember, Coordinates coords) {
+    validate(authMember).getTeam(authMember.getTeamId()).sendLocation(authMember, coords);
+  }
+
+  public Game validate(MemberDTO authMember) {
+    if (authMember == null || !Objects.equals(id, authMember.getGameId()) || getTeam(authMember.getTeamId()) == null) {
+      throw new TreasurehuntException(ErrorCode.UNAUTHORIZED_MEMBER);
+    }
+    return this;
   }
 }

@@ -126,6 +126,10 @@ public class GameService {
     getGame(member.getGameId()).completeChallenge(member.getTeamId(), response);
   }
 
+  public void sendLocation(MemberDTO authMember, Coordinates coords) {
+    getGame(authMember.getGameId()).sendLocation(authMember, coords);
+  }
+
   private Game getGame(Long gameId) {
     return games.stream().filter(g -> g.getId().equals(gameId)).findFirst().orElse(null);
   }
