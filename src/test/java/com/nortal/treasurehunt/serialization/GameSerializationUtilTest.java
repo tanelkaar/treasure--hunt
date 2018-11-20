@@ -8,7 +8,6 @@ import com.nortal.treasurehunt.model.Coordinates;
 import com.nortal.treasurehunt.model.Game;
 import com.nortal.treasurehunt.model.Member;
 import com.nortal.treasurehunt.model.Team;
-import com.nortal.treasurehunt.model.TrailLog;
 import com.nortal.treasurehunt.util.GameSerializationUtil;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -33,7 +32,8 @@ public class GameSerializationUtilTest {
     Member member1 = createTestMember("id1", "Member Name I");
     team1.addMember(member1);
     team1.setState(Team.TeamState.STARTING);
-    team1.logTrail(new TrailLog(new Coordinates(BigDecimal.valueOf(-65.0014), BigDecimal.valueOf(99.4378))));
+    // team1.logTrail(new TrailLog(new Coordinates(BigDecimal.valueOf(-65.0014),
+    // BigDecimal.valueOf(99.4378))));
 
     Team team2 = new Team("teäm2");
     team2.getMembers().add(createTestMember("id2", "name2"));
@@ -65,9 +65,8 @@ public class GameSerializationUtilTest {
 
   @Test
   public void testGameDeserialization() throws IOException {
-    Game game = GameSerializationUtil.deserializeFromJSON(
-        Files.lines(Paths.get("src/test/serialized_game_1.json"))
-            .collect(Collectors.joining()));
+    Game game = GameSerializationUtil
+        .deserializeFromJSON(Files.lines(Paths.get("src/test/serialized_game_1.json")).collect(Collectors.joining()));
     assert game != null;
     assert game.getTeams().size() == 2;
     assert game.getTeams().get(1).getName().equals("teäm2");

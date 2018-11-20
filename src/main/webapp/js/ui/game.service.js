@@ -3,11 +3,30 @@
 
   angular
     .module('treasurehunt.ui')
-    .factory('GameService', GameService);
+    .factory('GameService', GameService)
+    .factory('gameAuthInterceptor', gameAuthInterceptor)
+    .config(config);
 
-  function GameService($q, $http, MemberService) {
+  function config($httpProvider) {
+    $httpProvider.interceptors.push('gameAuthInterceptor');
+  }
+
+  function gameAuthInterceptor($cookies, $injector) {
+    return {
+      response: (rsp) => {
+        if (rsp.config.url.startsWith('/api/game') && $cookies.get('game-token')) {
+          $injector.get('GameService').authData($cookies.get('game-token'));
+        }
+        return rsp;
+      }
+    };
+  }
+
+  function GameService($q, $http, $state, jwtHelper) {
     let _posWatcher = null;
     let _currentPos = null;
+    let _authData;
+    let _gameToken;
     let _posOpts = {
       enableHighAccuracy: true,
       //timeout: 0,
@@ -17,8 +36,12 @@
 
     let service = {
       isCompatible: isCompatible,
+      authData: authData,
+      isMember: isMember,
+      hasGame: hasGame,
+      hasChallenge: hasChallenge,
       register: register,
-      getCurrentPos: getCurrentPos,
+      //getCurrentPos: getCurrentPos,
 
       getGames: getGames,
       addGame: addGame,
@@ -40,18 +63,56 @@
       return !!navigator.geolocation;
     }
 
+    function authData(gameToken) {
+      if (!gameToken) {
+        _gameToken = null;
+        _authData = null;
+        return;
+      }
+      if (_gameToken === gameToken) {
+        return;
+      }
+      _gameToken = gameToken;
+      _authData = jwtHelper.decodeToken(_gameToken);
+
+      console.log('AUTH: ', _authData);
+      if (!isMember()) {
+        $state.go('main');
+      } else if (_authData.challengeId) {
+        $state.go('challenge', { id: _authData.challengeId });
+      } else if (_authData.gameId) {
+        $state.go('map');
+      }
+    }
+
+    function isMember() {
+      return !!getMemberId();
+    }
+
+    function getMemberId() {
+      return _authData ? _authData.memberId : null;
+    }
+
+    function hasGame() {
+      return _authData ? _authData.gameId : null;
+    }
+
+    function hasChallenge() {
+      return _authData ? _authData.challengeId : null;
+    }
+
     function register() {
       console.log('register')
-      return $http.post('/api/register');
+      return $http.post('/api/game/register');
     }
 
     function getGames() {
-      return $http.get('/api/games');
+      return $http.get('/api/game/list');
     }
 
     function addGame(name) {
       return getCurrentPos().then((pos) => {
-        return $http.post('/api/add-game', {
+        return $http.post('/api/game/add', {
           name: name,
           start: pos
         });
@@ -59,7 +120,7 @@
     }
 
     function addTeam(gameId, name) {
-      return $http.post('/api/game/' + gameId + '/add-team', {
+      return $http.post('/api/game/' + gameId + '/team/add', {
         name: name
       });
     }
@@ -99,13 +160,17 @@
           lat: pos.coords.latitude,
           lng: pos.coords.longitude
         };
-
-        if (MemberService.hasGame()) {
-          $http.post('/api/game/send-location', _currentPos);
-        }
+        _posDefer.resolve(_currentPos);
+        sendLocation(_currentPos);
       }, (err) => {
         console.error('error watching current pos: ', err);
       }, _posOpts);
+    }
+
+    function sendLocation(pos) {
+      $http.post('/api/game/location', pos).then((rsp) => {
+        //$state.reload();
+      });
     }
 
     function stopTracking() {
@@ -127,6 +192,8 @@
         _posDefer.resolve(_currentPos);
         return _posDefer.promise;
       }
+
+      /*
       navigator.geolocation.getCurrentPosition((pos) => {
         _posDefer.resolve(_currentPos = {
           lat: pos.coords.latitude,
@@ -135,7 +202,7 @@
       }, (err) => {
         console.error('error getting current pos: ', err);
         getCurrentPos();
-      }, _posOpts);
+      }, _posOpts);*/
       return _posDefer.promise;
     }
   }

@@ -1,12 +1,11 @@
 package com.nortal.treasurehunt.security;
 
-import com.nortal.treasurehunt.dto.MemberDTO;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 
-public class MemberAuth extends AbstractAuthenticationToken {
-  public MemberAuth(MemberDTO member) {
+public class GameAuth extends AbstractAuthenticationToken {
+  public GameAuth(GameAuthData authData) {
     super(null);
-    super.setDetails(member);
+    super.setDetails(authData);
     super.setAuthenticated(true);
   }
 
@@ -21,7 +20,7 @@ public class MemberAuth extends AbstractAuthenticationToken {
   }
 
   @Override
-  public MemberDTO getDetails() {
-    return (MemberDTO) super.getDetails();
+  public GameAuthData getDetails() {
+    return (GameAuthData) super.getDetails();
   }
 }

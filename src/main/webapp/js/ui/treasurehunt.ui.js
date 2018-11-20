@@ -14,18 +14,14 @@
       MULTI_CHOICE: 'MULTI_CHOICE',
       IMAGE: 'IMAGE'
     })
+    .constant('CHALLENGE_STATE', {
+      UNCOMPLETED: 'UNCOMPLETED',
+      IN_PROGRESS: 'IN_PROGRESS',
+      COMPLETED: 'COMPLETED'
+    })
     .run(run);
 
-  function config($stateProvider, $urlRouterProvider, $httpProvider) {
-    $httpProvider.interceptors.push(() => {
-      return {
-        'request': (config) => {
-          //config.url = '/treasure-hunt' + config.url;
-          return config;
-        }
-      }
-    });
-
+  function config($stateProvider, $urlRouterProvider) {
     $stateProvider.state('main', {
       url: '/main',
       views: {
@@ -56,9 +52,6 @@
         }
       },
       resolve: {
-        currentPos: (GameService) => {
-          return GameService.getCurrentPos();
-        },
         map: (GameService) => {
           return GameService.getMap().then((rsp) => {
             return rsp.data;
@@ -86,24 +79,26 @@
     $urlRouterProvider.otherwise('main');
   }
 
-  function run($rootScope, $state, MemberService) {
+  function run($rootScope, $state, GameService) {
     $rootScope.$on('$stateChangeStart', (event, toState, toParams, fromState, fromParams, options) => {
-      if (toState.name != 'main' && !MemberService.isRegistered()) {
-        event.preventDefault();
-        $state.go('main');
-        return;
-      }
-
-      if (toState.name != 'main' && !MemberService.hasGame()) {
-        event.preventDefault();
-        $state.go('main');
-        return;
-      }
-
-      if (toState.name === 'main' && MemberService.hasGame()) {
-        event.preventDefault();
-        $state.go('map');
-        return;
+      if (_.contains(['main', 'map', 'challenge'], toState.name)) {
+        console.log('change state: ', toState.name);
+        if (toState.name != 'main' && !GameService.isMember()) {
+          event.preventDefault();
+          $state.go('main', { reload: fromState.name === 'main' });
+          return;
+        } else if (toState.name != 'challenge' && GameService.hasChallenge()) {
+          event.preventDefault();
+          //$state.go('challenge', { id: MemberService.getChallengeId() }, { reload: fromState.name === 'challenge' });
+          return;
+        } else if (toState.name != 'map' && GameService.hasGame() && !GameService.hasChallenge()) {
+          event.preventDefault();
+          //$state.go('map', { reload: fromState.name === 'map' });
+          return;
+        //} else if (fromState.name === toState.name) {
+        //  event.preventDefault();
+        //  return;
+        }
       }
     });
   }

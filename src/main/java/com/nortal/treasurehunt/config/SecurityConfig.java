@@ -1,7 +1,7 @@
 package com.nortal.treasurehunt.config;
 
-import com.nortal.treasurehunt.security.MemberAuthFilter;
-import com.nortal.treasurehunt.security.MemberAuthProvider;
+import com.nortal.treasurehunt.security.GameAuthFilter;
+import com.nortal.treasurehunt.security.GameAuthProvider;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,22 +38,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   }
 
   @Bean
-  public FilterRegistrationBean<MemberAuthFilter> filterRegistrationBean() throws Exception {
-    FilterRegistrationBean<MemberAuthFilter> filterRegistrationBean = new FilterRegistrationBean<>();
+  public FilterRegistrationBean<GameAuthFilter> filterRegistrationBean() throws Exception {
+    FilterRegistrationBean<GameAuthFilter> filterRegistrationBean = new FilterRegistrationBean<>();
     filterRegistrationBean.setEnabled(false);
     filterRegistrationBean.setFilter(memberAuthFilter());
     return filterRegistrationBean;
   }
 
   @Bean
-  public MemberAuthFilter memberAuthFilter() throws Exception {
-    MemberAuthFilter maf = new MemberAuthFilter("/api/**");
+  public GameAuthFilter memberAuthFilter() throws Exception {
+    GameAuthFilter maf = new GameAuthFilter("/api/game/**");
     maf.setAuthenticationManager(authenticationManager());
     return maf;
   }
 
   @Bean
-  public MemberAuthProvider authProvider() {
-    return new MemberAuthProvider();
+  public GameAuthProvider authProvider() {
+    return new GameAuthProvider();
   }
 }

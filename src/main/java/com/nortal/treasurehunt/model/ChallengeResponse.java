@@ -1,5 +1,6 @@
 package com.nortal.treasurehunt.model;
 
+import com.nortal.treasurehunt.enums.ChallengeState;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,7 @@ public class ChallengeResponse {
   private Coordinates coords;
   private String value;
   private List<Long> options = new ArrayList<>();
+  private ChallengeState state;
 
   public Long getChallengeId() {
     return challengeId;
@@ -39,5 +41,21 @@ public class ChallengeResponse {
 
   public void setOptions(List<Long> options) {
     this.options = options;
+  }
+
+  public ChallengeState getState() {
+    return state;
+  }
+
+  public void setState(ChallengeState state) {
+    this.state = state;
+  }
+
+  public boolean isCompleted() {
+    return ChallengeState.COMPLETED.equals(state);
+  }
+
+  public boolean isInProgress() {
+    return ChallengeState.IN_PROGRESS.equals(state);
   }
 }

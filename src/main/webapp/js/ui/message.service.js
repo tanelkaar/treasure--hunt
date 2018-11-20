@@ -9,6 +9,7 @@
       'GAME_EXISTS': 'Sellise nimega mäng on juba olemas!',
       'TEAM_EXISTS': 'Sellise nimega meeskond on juba olemas!',
       'INVALID_MEMBER': 'Ebakorretne mängu osaline!',
+      'INVALID_CHALLENGE': 'Selline ülesanne puudub!',
       'CHALLENGE_COMPLETED': 'Ülesanne on juba lahendatud!'
     })
     .factory('MessageService', MessageService)
