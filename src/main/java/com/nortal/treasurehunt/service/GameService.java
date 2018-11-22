@@ -7,7 +7,6 @@ import com.nortal.treasurehunt.TreasurehuntException;
 import com.nortal.treasurehunt.dto.GameDTO;
 import com.nortal.treasurehunt.dto.TeamDTO;
 import com.nortal.treasurehunt.enums.ChallengeAnswerType;
-import com.nortal.treasurehunt.enums.ChallengeState;
 import com.nortal.treasurehunt.enums.ChallengeType;
 import com.nortal.treasurehunt.enums.ErrorCode;
 import com.nortal.treasurehunt.model.Challenge;
@@ -112,7 +111,7 @@ public class GameService {
     return game;
   }
 
-  private Game getGame() {
+  public Game getGame() {
     GameAuthData authData = getAuthData();
     Game game = getGame(authData.getGameId());
     game.getTeam(authData.getTeamId()).getMember(authData.getMemberId());
@@ -129,8 +128,8 @@ public class GameService {
     // authData.setGameId(game.getId()); -- avoid for now to access main
     Team team = game.getTeam(authData.getTeamId());
     // authData.setTeamId(team.getId()); -- avoid for now to access main
-    ChallengeResponse response = team.getResponse(ChallengeState.IN_PROGRESS);
-    authData.setChallengeId(response != null ? response.getChallengeId() : null);
+    Challenge currentChallenge = team.getCurrentChallenge();
+    authData.setChallengeId(currentChallenge != null ? currentChallenge.getId() : null);
     return authData;
   }
 
@@ -192,19 +191,23 @@ public class GameService {
   }
 
   public GameMap getMap() {
-    return getGame().getMap(getAuthData().getTeamId());
+    return getGame().getTeam(getAuthData().getTeamId()).getMap();
   }
 
-  public Challenge startChallenge(Long challengeId) {
-    return getGame().startChallenge(getAuthData().getTeamId(), challengeId);
+  public Challenge getCurrentChallenge() {
+    Challenge challenge = getGame().getTeam(getAuthData().getTeamId()).getCurrentChallenge();
+    if(challenge == null) {
+      throw new TreasurehuntException(ErrorCode.CHALLENGE_NOT_STARTED);
+    }
+    return challenge;
   }
 
   public void completeChallenge(ChallengeResponse response) {
-    getGame().completeChallenge(getAuthData().getTeamId(), response);
+    getGame().getTeam(getAuthData().getTeamId()).completeChallenge(response);
   }
 
   public GameMap sendLocation(Coordinates coords) {
-    return getGame().sendLocation(getAuthData().getTeamId(), getAuthData().getMemberId(), coords);
+    return getGame().getTeam(getAuthData().getTeamId()).sendLocation(getAuthData().getMemberId(), coords);
   }
 
   private List<Challenge> generateChallenges(Coordinates coords) {

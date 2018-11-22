@@ -24,18 +24,25 @@ public class Team {
   private Long id;
   private final String name;
   private final List<Member> members = new ArrayList<>();
-  private Coordinates start;
-  private Coordinates finish;
+  private final Coordinates start;
+  private final Coordinates finish;
+  private final Boundaries startBoundaries;
+  private final Boundaries finishBoundaries;
   private String primaryMemberId;
   private TeamState state = TeamState.STARTING;
   private final List<TrailLog> trail = new ArrayList<>();
-  private List<ChallengeResponse> responses = new ArrayList<>();
+  private TeamChallenge currentChallenge;
+  private final List<Challenge> uncompletedChallenges;
+  private final List<TeamChallenge> completedChallenges = new ArrayList<>();
 
-  public Team(String name, Coordinates start, Coordinates finish) {
+  public Team(String name, Coordinates start, Coordinates finish, List<Challenge> uncompletedChallenges) {
     this.id = IDUtil.getNext();
     this.name = name;
     this.start = start;
     this.finish = finish;
+    this.startBoundaries = new Boundaries(start, Waypoint.WAYPOINT_RANGE);
+    this.finishBoundaries = new Boundaries(finish, Waypoint.WAYPOINT_RANGE);
+    this.uncompletedChallenges = uncompletedChallenges;
   }
 
   public Long getId() {
@@ -91,78 +98,68 @@ public class Team {
     return member;
   }
 
-  public ChallengeResponse getResponse(Long challengeId) {
-    return responses.stream().filter(
-
-        r -> r.getChallengeId().equals(challengeId)).findFirst().orElse(null);
-
-  }
-
-  public ChallengeResponse getResponse(ChallengeState state) {
-    return responses.stream().filter(
-
-        r -> state.equals(r.getState())).findFirst().orElse(null);
-
-  }
-
-  public void createChallenge(Long challengeId) {
-    synchronized (responses) {
-      LOG.info("Creating team {} challenge {}", name, challengeId);
-      ChallengeResponse response = new ChallengeResponse();
-      response.setChallengeId(challengeId);
-      response.setState(ChallengeState.IN_PROGRESS);
-      responses.add(response);
-    }
-  }
-
-  public void startChallenge(Long challengeId) {
-    synchronized (responses) {
-      ChallengeResponse response = getResponse(challengeId);
-      if (response == null) {
-        throw new TreasurehuntException(ErrorCode.INVALID_CHALLENGE);
-      }
-      if (response.isCompleted()) {
+  public void startChallenge(Challenge challenge) {
+    synchronized (this) {
+      if (!uncompletedChallenges.contains(challenge)
+          || currentChallenge != null && currentChallenge.getChallenge().equals(challenge)) {
         throw new TreasurehuntException(ErrorCode.CHALLENGE_COMPLETED);
       }
-      LOG.info("Team {} challenge {} already started - not creating new response", name, challengeId);
-      return;
+      uncompletedChallenges.remove(challenge);
+      // if current challenge wasn't chosen yet
+      if (currentChallenge == null) {
+        this.currentChallenge = new TeamChallenge(challenge);
+      } else {
+        if (!currentChallenge.getChallenge().equals(challenge)) {
+          throw new TreasurehuntException(ErrorCode.WRONG_CHALLENGE);
+        }
+      }
+      currentChallenge.setState(com.nortal.treasurehunt.model.TeamChallenge.ChallengeState.IN_PROGRESS);
+      currentChallenge.setStartTimestamp(System.currentTimeMillis());
+      // should be done once, but doesn't matter
+      state = TeamState.IN_PROGRESS;
     }
   }
 
-  public void completeChallenge(Long challengeId, ChallengeResponse rsp) {
-    synchronized (responses) {
-      ChallengeResponse response = getResponse(rsp.getChallengeId());
-      if (response == null) {
+  public void completeChallenge(ChallengeResponse response) {
+    synchronized (this) {
+      if (currentChallenge == null) {
         throw new TreasurehuntException(ErrorCode.CHALLENGE_NOT_STARTED);
       }
-      if (response.isCompleted()) {
-        throw new TreasurehuntException(ErrorCode.CHALLENGE_COMPLETED);
-      }
-      response.setOptions(rsp.getOptions());
-      response.setValue(rsp.getValue());
-      response.setCoords(rsp.getCoords());
-      response.setState(ChallengeState.COMPLETED);
+    }
+    currentChallenge.setEndTimestamp(System.currentTimeMillis());
+    currentChallenge.setState(com.nortal.treasurehunt.model.TeamChallenge.ChallengeState.COMPLETED);
+    currentChallenge.setChallengeResponse(response);
+    completedChallenges.add(currentChallenge);
+    currentChallenge = null;
+    if (uncompletedChallenges.isEmpty()) {
+      this.state = TeamState.COMPLETING;
     }
   }
 
-  public boolean isCompleted(Long challengeId) {
-    ChallengeResponse response = getResponse(challengeId);
-    return response != null && response.isCompleted();
-  }
-
-  public synchronized void sendLocation(String memberId, Coordinates coords) {
+  public synchronized GameMap sendLocation(String memberId, Coordinates coords) {
     switch (state) {
     case STARTING:
-      if (CoordinatesUtil.intersects(new Boundaries(start, CoordinatesUtil.RANGE), coords)) {
+      if (CoordinatesUtil.intersects(startBoundaries, coords)) {
         this.state = TeamState.IN_PROGRESS;
       }
       break;
+    case IN_PROGRESS:
+      Challenge challenge = uncompletedChallenges.stream()
+      .filter(c -> CoordinatesUtil.intersects(c.getBoundaries(), coords))
+      .findFirst().orElse(null);
+      if(challenge != null) {
+        startChallenge(challenge);
+      }
+      break;
     case COMPLETING:
-      if (CoordinatesUtil.intersects(new Boundaries(finish, CoordinatesUtil.RANGE), coords)) {
+      if (CoordinatesUtil.intersects(finishBoundaries, coords)) {
         this.state = TeamState.COMPLETED;
       }
+      break;
+    case COMPLETED:
     }
     addTrail(memberId, coords);
+    return getMap();
   }
 
   private void addTrail(String memberId, Coordinates coords) {
@@ -218,4 +215,31 @@ public class Team {
   // }
   // return this;
   // }
+  public List<Waypoint> getWaypointsOnMap() {
+    List<Waypoint> waypoints = new ArrayList<>();
+    // a challenge has been selected (game start) or is in progress. Return
+    // that single challenge.
+    if (currentChallenge != null) {
+      waypoints.add(new ChallengeWaypoint(currentChallenge.getChallenge(),
+          state == TeamState.STARTING ? ChallengeState.UNCOMPLETED : ChallengeState.IN_PROGRESS));
+    } else {
+      // return uncompleted and completed challenges
+      uncompletedChallenges.forEach(c -> waypoints.add(new ChallengeWaypoint(c, ChallengeState.UNCOMPLETED)));
+      completedChallenges.forEach(c -> waypoints.add(new ChallengeWaypoint(c.getChallenge(), ChallengeState.COMPLETED)));
+    }
+    return waypoints;
+  }
+
+  public GameMap getMap() {
+    return new GameMap(this);
+  }
+
+  public Challenge getCurrentChallenge() {
+    return currentChallenge == null ? null : currentChallenge.getChallenge();
+  }
+
+  public Coordinates getCurrentLocation() {
+    TrailLog log = getLatestLog();
+    return log != null ? log.getCoordinates() : null;
+  }
 }

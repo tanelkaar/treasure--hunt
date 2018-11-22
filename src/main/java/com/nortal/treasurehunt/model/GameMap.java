@@ -10,12 +10,12 @@ public class GameMap {
   private List<Waypoint> waypoints;
   private TeamState state;
 
-  public GameMap(Coordinates location, Waypoint start, Waypoint finish, List<Waypoint> waypoints, TeamState state) {
-    this.location = location;
-    this.start = start;
-    this.finish = finish;
-    this.waypoints = waypoints;
-    this.state = state;
+  public GameMap(Team team) {
+    this.location = team.getCurrentLocation();
+    this.start = TeamState.STARTING.equals(team.getState()) ? new Waypoint(team.getStart()) : null;
+    this.finish = TeamState.COMPLETING.equals(team.getState()) ? new Waypoint(team.getFinish()) : null;
+    this.waypoints = TeamState.IN_PROGRESS.equals(team.getState()) ? team.getWaypointsOnMap() : null;
+    this.state = team.getState();
   }
 
   public Coordinates getLocation() {

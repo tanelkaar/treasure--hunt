@@ -71,14 +71,13 @@ public class GameController {
 
   @PostMapping("/challenge/{challengeId}/start")
   public ResponseEntity<Challenge> startChallenge(@PathVariable("challengeId") Long challengeId) {
-    return ResponseEntity.ok(gameService.startChallenge(challengeId));
+    return ResponseEntity.ok(gameService.getCurrentChallenge());
   }
 
   @PostMapping("/challenge/{challengeId}/complete")
   @ResponseStatus(code = HttpStatus.OK)
   public ResponseEntity<Void> completeChallenge(@PathVariable("challengeId") Long challengeId,
       @RequestBody ChallengeResponse response) {
-    response.setChallengeId(challengeId);
     gameService.completeChallenge(response);
     return ResponseEntity.noContent().build();
   }
@@ -93,9 +92,9 @@ public class GameController {
     return ResponseEntity.ok(gameService.sendLocation(coords));
   }
 
-  @RequestMapping(value = "/{gameId}/export", method = RequestMethod.GET, produces = "application/json")
-  public String exportGame(@PathVariable Long gameId) {
-    return GameSerializationUtil.serializeToJSON(gameService.getGame(gameId));
+  @RequestMapping(value = "/export", method = RequestMethod.GET, produces = "application/json")
+  public String exportGame() {
+    return GameSerializationUtil.serializeToJSON(gameService.getGame());
   }
 
   @PostMapping("/game/import")

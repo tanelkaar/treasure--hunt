@@ -15,6 +15,7 @@ public class Challenge {
   private String video;
   private String url;
   private List<ChallengeOption> options = new ArrayList<>();
+  private transient Boundaries boundaries;
 
   public Long getId() {
     return id;
@@ -88,4 +89,10 @@ public class Challenge {
     this.options = options;
   }
 
+  public Boundaries getBoundaries() {
+    if(boundaries == null) {
+      boundaries = new Boundaries(coordinates, Waypoint.WAYPOINT_RANGE);
+    }
+    return boundaries;
+  }
 }

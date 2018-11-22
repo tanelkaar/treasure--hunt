@@ -4,7 +4,10 @@ import com.nortal.treasurehunt.enums.ChallengeState;
 import com.nortal.treasurehunt.enums.ChallengeType;
 
 public class ChallengeWaypoint extends Waypoint {
+  // should be removed
+  @Deprecated
   private Long challengeId;
+  // needed?
   private ChallengeType type;
   private ChallengeState state;
 

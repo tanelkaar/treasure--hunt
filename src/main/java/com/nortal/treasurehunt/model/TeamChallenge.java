@@ -7,6 +7,7 @@ public class TeamChallenge {
   private long endTimestamp;
   private ChallengeState state;
   private String result;
+  private ChallengeResponse challengeResponse;
 
   public TeamChallenge(Challenge challenge) {
     this.challenge = challenge;
@@ -55,5 +56,13 @@ public class TeamChallenge {
 
   public void setResult(String result) {
     this.result = result;
+  }
+
+  public ChallengeResponse getChallengeResponse() {
+    return challengeResponse;
+  }
+
+  public void setChallengeResponse(ChallengeResponse challengeResponse) {
+    this.challengeResponse = challengeResponse;
   }
 }
