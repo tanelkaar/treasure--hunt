@@ -12,7 +12,9 @@
       <div class="alert alert-success" data-ng-if="ctrl.challenge.text">
         <h4 data-ng-if="ctrl.challenge.type === 'QUESTION'">Küsimus</h4>
         <h4 data-ng-if="ctrl.challenge.type === 'TASK'">Ülesanne</h4>
-        {{ctrl.challenge.text}}
+        <p>{{ctrl.challenge.text}}</p>
+
+        <a href="{{ctrl.challenge.url | trustUrl}}" target="_blank" data-ng-if="ctrl.challenge.url">Link</a>
       </div>
       <img class="img-thumbnail mb-3" data-ng-if="ctrl.challenge.image" data-ng-src="{{ctrl.challenge.image | trustUrl}}" />
       <div class="embed-responsive embed-responsive-16by9 mb-3" data-ng-if="ctrl.challenge.video">

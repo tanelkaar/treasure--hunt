@@ -22,17 +22,22 @@
     };
   }
 
-  function GameService($q, $http, $state, jwtHelper) {
-    let _posWatcher = null;
-    let _currentPos = null;
+  function GameService($rootScope, $q, $http, $state, $interval, jwtHelper, MessageService, TEAM_STATE, CHALLENGE_STATE) {
     let _authData;
     let _gameToken;
+
+    let _posWatcher = null;
+    let _currentPos = null;
+    let _posDefer = $q.defer();
     let _posOpts = {
       enableHighAccuracy: true,
       //timeout: 0,
       maximumAge: 0
     };
-    let _posDefer = $q.defer();
+
+    let _map = null;
+    let _mapDefer = $q.defer();
+    let _mapWatcher = null;
 
     let service = {
       isCompatible: isCompatible,
@@ -48,15 +53,19 @@
       addTeam: addTeam,
       startGame: startGame,
       getMap: getMap,
+      sendLocation: sendLocation, // for testing only
 
       startChallenge: startChallenge,
-      completeChallenge: completeChallenge
+      completeChallenge: completeChallenge,
     };
     init();
     return service;
 
     function init() {
       startTracking();
+      _mapWatcher = $interval(() => {
+        pollMap();
+      }, 2000);
     }
 
     function isCompatible() {
@@ -76,13 +85,14 @@
       _authData = jwtHelper.decodeToken(_gameToken);
 
       console.log('AUTH: ', _authData);
+      /*
       if (!isMember()) {
         $state.go('main');
       } else if (_authData.challengeId) {
         $state.go('challenge', { id: _authData.challengeId });
       } else if (_authData.gameId) {
         $state.go('map');
-      }
+      }*/
     }
 
     function isMember() {
@@ -98,7 +108,20 @@
     }
 
     function hasChallenge() {
-      return _authData ? _authData.challengeId : null;
+      return !!getChallengeId();
+    }
+
+    function getChallengeId() {
+      if (!_map) {
+        return null;
+      }
+      let waypoint = _.find(_map.waypoints, (wp) => {
+        return wp.state === CHALLENGE_STATE.IN_PROGRESS;
+      });
+      if (!waypoint) {
+        return null;
+      }
+      return waypoint.challengeId;
     }
 
     function register() {
@@ -133,7 +156,12 @@
     }
 
     function getMap() {
-      return $http.get('/api/game/map');
+      if (!_map) {
+        return _mapDefer.promise;;
+      }
+      _mapDefer = $q.defer();
+      _mapDefer.resolve(_map);
+      return _mapDefer.promise;
     }
 
     function startChallenge(id) {
@@ -169,7 +197,31 @@
 
     function sendLocation(pos) {
       $http.post('/api/game/location', pos).then((rsp) => {
-        //$state.reload();
+      });
+    }
+
+    function pollMap() {
+      if (!hasGame()) {
+        return;
+      }
+      $http.get('/api/game/map').then((rsp) => {
+        _map = rsp.data;
+        _mapDefer.resolve(_map);
+
+        if (_map.state === TEAM_STATE.COMPLETED) {
+          MessageService.showInfo({ code: 'TEAM_COMPLETED' });
+          _authData.gameId = null;
+          $state.go('main');
+          return;
+        }
+
+        if (hasChallenge()) {
+          $state.go('challenge', { id: getChallengeId() });
+          return;
+        }
+
+        $rootScope.$emit('mapRefresh', _map);
+        $state.go('map');
       });
     }
 
@@ -190,8 +242,8 @@
       if (_currentPos) {
         _posDefer = $q.defer();
         _posDefer.resolve(_currentPos);
-        return _posDefer.promise;
       }
+      return _posDefer.promise;
 
       /*
       navigator.geolocation.getCurrentPosition((pos) => {
@@ -202,8 +254,8 @@
       }, (err) => {
         console.error('error getting current pos: ', err);
         getCurrentPos();
-      }, _posOpts);*/
-      return _posDefer.promise;
+      }, _posOpts);
+      return _posDefer.promise;*/
     }
   }
 })();

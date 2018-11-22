@@ -3,6 +3,8 @@ package com.nortal.treasurehunt.model;
 import com.nortal.treasurehunt.TreasurehuntException;
 import com.nortal.treasurehunt.enums.ChallengeState;
 import com.nortal.treasurehunt.enums.ErrorCode;
+import com.nortal.treasurehunt.enums.TeamState;
+import com.nortal.treasurehunt.util.CoordinatesUtil;
 import com.nortal.treasurehunt.util.IDUtil;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -22,20 +24,18 @@ public class Team {
   private Long id;
   private final String name;
   private final List<Member> members = new ArrayList<>();
+  private Coordinates start;
+  private Coordinates finish;
   private String primaryMemberId;
   private TeamState state = TeamState.STARTING;
   private final List<TrailLog> trail = new ArrayList<>();
   private List<ChallengeResponse> responses = new ArrayList<>();
 
-  public enum TeamState {
-    STARTING,
-    IN_PROGRESS,
-    COMPLETED;
-  }
-
-  public Team(String name) {
+  public Team(String name, Coordinates start, Coordinates finish) {
     this.id = IDUtil.getNext();
     this.name = name;
+    this.start = start;
+    this.finish = finish;
   }
 
   public Long getId() {
@@ -57,6 +57,14 @@ public class Team {
       }
       this.members.add(member);
     }
+  }
+
+  public Coordinates getStart() {
+    return start;
+  }
+
+  public Coordinates getFinish() {
+    return finish;
   }
 
   public TeamState getState() {
@@ -126,6 +134,21 @@ public class Team {
   }
 
   public synchronized void sendLocation(String memberId, Coordinates coords) {
+    switch (state) {
+    case STARTING:
+      if (CoordinatesUtil.intersects(new Boundaries(start, CoordinatesUtil.RANGE), coords)) {
+        this.state = TeamState.IN_PROGRESS;
+      }
+      break;
+    case COMPLETING:
+      if (CoordinatesUtil.intersects(new Boundaries(finish, CoordinatesUtil.RANGE), coords)) {
+        this.state = TeamState.COMPLETED;
+      }
+    }
+    addTrail(memberId, coords);
+  }
+
+  private void addTrail(String memberId, Coordinates coords) {
     Member member = getMember(memberId);
 
     if (trail.isEmpty()) {

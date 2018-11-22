@@ -5,40 +5,42 @@
     .module('treasurehunt.ui')
     .controller('MapCtrl', MapCtrl);
 
-  function MapCtrl(map, $scope, $state, $interval, NgMap, GameService, CHALLENGE_STATE) {
+  function MapCtrl(map, $rootScope, $scope, $state, $interval, NgMap, GameService, CHALLENGE_STATE) {
     $scope.$on('$destroy', () => {
       cleanup();
+    });
+    $rootScope.$on('mapRefresh', function (event, map) {
+      initMap(map);
     });
 
     let _watcher;
     let ctrl = {
       map: null,
       uncompletedWaypoints: null,
+      select: select
     };
-    init();
+    //init();
     return ctrl = angular.extend(this, ctrl);
 
+
     function init() {
-      initMap(map);
+      initMap();
       _watcher = $interval(() => {
-        loadMap();
-      }, 5000);
+        initMap();
+      }, 500);
     }
-    
+
     function initMap(map) {
-      ctrl.map = angular.merge(ctrl.map || {}, map);
-      ctrl.uncompletedWaypoints = _.filter(ctrl.map.waypoints, (wp) => {
-        return wp.state != CHALLENGE_STATE.COMPLETED;
-      });
-      //checkMap();
-    }
-
-    function loadMap() {
-      GameService.getMap().then((rsp) => {
-        initMap(rsp.data);
+      GameService.getMap().then((map) => {
+        ctrl.map = angular.merge(ctrl.map || {}, map);
+        ctrl.uncompletedWaypoints = _.filter(ctrl.map.waypoints, (wp) => {
+          return wp.state != CHALLENGE_STATE.COMPLETED;
+        });
+        //checkMap();
       });
     }
 
+    /*
     function checkMap() {
       console.log('check map');
       if (!ctrl.map.location) {
@@ -58,6 +60,10 @@
         });
         $state.go('challenge', { id: waypoint.challengeId });
       });
+    }*/
+
+    function select(event, wp) {
+      GameService.sendLocation(wp.coords);
     }
 
     function cleanup() {

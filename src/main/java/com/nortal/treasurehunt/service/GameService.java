@@ -21,8 +21,8 @@ import com.nortal.treasurehunt.model.Member;
 import com.nortal.treasurehunt.model.Team;
 import com.nortal.treasurehunt.security.GameAuth;
 import com.nortal.treasurehunt.security.GameAuthData;
+import com.nortal.treasurehunt.util.CoordinatesUtil;
 import com.nortal.treasurehunt.util.IDUtil;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -209,29 +209,15 @@ public class GameService {
 
   private List<Challenge> generateChallenges(Coordinates coords) {
     List<Challenge> challenges = new ArrayList<>();
-    Challenge c = new Challenge();
-    BeanUtils.copyProperties(tempChallenges.get((int) (Math.random() * 5)), c);
-    c.setId(IDUtil.getNext());
-    c.setCoordinates(coords);
-    challenges.add(c);
-    c = new Challenge();
-    BeanUtils.copyProperties(tempChallenges.get((int) (Math.random() * 5)), c);
-    c.setId(IDUtil.getNext());
-    c.setCoordinates(coords);
-    challenges.add(c);
+
     for (int i = 0; i <= 5; i++) {
-      c = new Challenge();
-      BeanUtils.copyProperties(tempChallenges.get((int) (Math.random() * 5)), c);
+      Challenge c = new Challenge();
+      BeanUtils.copyProperties(tempChallenges.get((int) (Math.random() * 6)), c);
       c.setId(IDUtil.getNext());
-      c.setCoordinates(new Coordinates(getPos(coords.getLat()), getPos(coords.getLng())));
+      c.setCoordinates(CoordinatesUtil.randomize(coords));
       challenges.add(c);
     }
     return challenges;
-  }
-
-  private BigDecimal getPos(BigDecimal pos) {
-    long multip = ((int) (Math.random() * 2)) % 2 == 0 ? 1 : -1;
-    return pos.add(BigDecimal.valueOf(Math.random() / 500).multiply(BigDecimal.valueOf(multip)));
   }
 
   List<Challenge> tempChallenges = new ArrayList<>();
@@ -259,6 +245,13 @@ public class GameService {
         new ChallengeOption(IDUtil.getNext(), "kana"),
         new ChallengeOption(IDUtil.getNext(), "justament")));
     c.setAnswerType(ChallengeAnswerType.MULTI_CHOICE);
+    tempChallenges.add(c);
+
+    c = new Challenge();
+    c.setType(ChallengeType.QUESTION);
+    c.setText("Mis uudist?");
+    c.setUrl("http://www.delfi.ee");
+    c.setAnswerType(ChallengeAnswerType.TEXT);
     tempChallenges.add(c);
 
     c = new Challenge();

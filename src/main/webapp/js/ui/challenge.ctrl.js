@@ -81,7 +81,7 @@
 
       GameService.completeChallenge(ctrl.response).then(() => {
         MessageService.showSuccess({ text: challenge.type === CHALLENE_TYPE.QUESTION ? 'Küsimus edukalt vastatud!' : 'Ülesanne edukalt lõpetatud!' });
-        //$state.go('map');
+        $state.go('map');
       });
     }
   }

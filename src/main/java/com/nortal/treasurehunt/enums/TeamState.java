@@ -1,7 +1,8 @@
 package com.nortal.treasurehunt.enums;
 
-public enum ChallengeState {
-  UNCOMPLETED,
+public enum TeamState {
+  STARTING,
   IN_PROGRESS,
+  COMPLETING,
   COMPLETED;
 }

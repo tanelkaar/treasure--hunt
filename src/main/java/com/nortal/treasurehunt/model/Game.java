@@ -5,6 +5,7 @@ import com.nortal.treasurehunt.dto.TeamDTO;
 import com.nortal.treasurehunt.enums.ChallengeState;
 import com.nortal.treasurehunt.enums.ErrorCode;
 import com.nortal.treasurehunt.enums.GameState;
+import com.nortal.treasurehunt.enums.TeamState;
 import com.nortal.treasurehunt.util.CoordinatesUtil;
 import com.nortal.treasurehunt.util.IDUtil;
 import java.util.ArrayList;
@@ -59,7 +60,8 @@ public class Game {
       if (team != null) {
         throw new TreasurehuntException(ErrorCode.TEAM_EXISTS);
       }
-      teams.add(team = new Team(dto.getName()));
+      teams.add(team =
+          new Team(dto.getName(), CoordinatesUtil.randomize(startFinish), CoordinatesUtil.randomize(startFinish)));
       dto.setId(team.getId());
     }
     return dto;
@@ -80,13 +82,31 @@ public class Game {
   public GameMap getMap(Long teamId) {
     Team team = getTeam(teamId);
 
-    List<Waypoint> waypoints = new ArrayList<>();
-    challenges.forEach(c -> {
-      ChallengeResponse rsp = team.getResponse(c.getId());
-      waypoints.add(new Waypoint(c, rsp != null ? rsp.getState() : ChallengeState.UNCOMPLETED));
-    });
     TrailLog log = team.getLatestLog();
-    return new GameMap(log != null ? log.getCoordinates() : null, getStartFinish(), waypoints);
+    Coordinates location = log != null ? log.getCoordinates() : null;
+    switch (team.getState()) {
+    case STARTING:
+      return new GameMap(location, new Waypoint(team.getStart()), null, null, team.getState());
+    case IN_PROGRESS:
+      if (challenges.stream().allMatch(c -> team.isCompleted(c.getId()))) {
+        team.setState(TeamState.COMPLETING);
+        return new GameMap(location, null, new Waypoint(team.getFinish()), null, team.getState());
+      }
+      List<Waypoint> waypoints = new ArrayList<>();
+      challenges.forEach(c -> {
+        ChallengeResponse response = team.getResponse(c.getId());
+        ChallengeWaypoint wp =
+            new ChallengeWaypoint(c, response != null ? response.getState() : ChallengeState.UNCOMPLETED);
+        waypoints.add(wp);
+      });
+      return new GameMap(location, null, null, waypoints, TeamState.IN_PROGRESS);
+    case COMPLETING:
+      return new GameMap(location, null, new Waypoint(team.getFinish()), null, team.getState());
+    case COMPLETED:
+      return new GameMap(location, null, null, null, team.getState());
+    default:
+      throw new TreasurehuntException(ErrorCode.UNEXPECTED_ERROR);
+    }
   }
 
   private Challenge getChallenge(Long challengeId) {
@@ -99,10 +119,11 @@ public class Game {
 
   public Challenge startChallenge(Long teamId, Long challengeId, Coordinates coords) {
     Challenge challenge = getChallenge(challengeId);
-    if (!CoordinatesUtil
-        .intersects(new Boundaries(challenge.getCoordinates(), Challenge.CHALLENGE_BOUNDARIES_MARGIN_METERS), coords)) {
-      throw new TreasurehuntException(ErrorCode.CHALLENGE_NOT_IN_RANGE);
-    }
+    // if (!CoordinatesUtil
+    // .intersects(new Boundaries(challenge.getCoordinates(),
+    // Challenge.CHALLENGE_BOUNDARIES_MARGIN_METERS), coords)) {
+    // throw new TreasurehuntException(ErrorCode.CHALLENGE_NOT_IN_RANGE);
+    // }
     getTeam(teamId).startChallenge(challenge.getId());
     return challenge;
   }
@@ -116,8 +137,7 @@ public class Game {
     Team team = getTeam(teamId);
     team.sendLocation(memberId, coords);
     challenges.stream()
-        .filter(c -> CoordinatesUtil
-            .intersects(new Boundaries(c.getCoordinates(), Challenge.CHALLENGE_BOUNDARIES_MARGIN_METERS), coords)
+        .filter(c -> CoordinatesUtil.intersects(new Boundaries(c.getCoordinates(), Waypoint.WAYPOINT_RANGE), coords)
             && !team.isCompleted(c.getId()))
         .forEach(c -> team.startChallenge(c.getId()));
     return getMap(teamId);

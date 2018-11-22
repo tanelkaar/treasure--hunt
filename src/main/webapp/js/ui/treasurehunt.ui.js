@@ -19,6 +19,12 @@
       IN_PROGRESS: 'IN_PROGRESS',
       COMPLETED: 'COMPLETED'
     })
+    .constant('TEAM_STATE', {
+      UNCOMPLETED: 'STARTING',
+      IN_PROGRESS: 'IN_PROGRESS',
+      IN_PROGRESS: 'COMPLETING',
+      COMPLETED: 'COMPLETED'
+    })
     .run(run);
 
   function config($stateProvider, $urlRouterProvider) {
@@ -53,8 +59,8 @@
       },
       resolve: {
         map: (GameService) => {
-          return GameService.getMap().then((rsp) => {
-            return rsp.data;
+          return GameService.getMap().then((map) => {
+            return map;
           });
         }
       }
@@ -87,7 +93,7 @@
           event.preventDefault();
           $state.go('main', { reload: fromState.name === 'main' });
           return;
-        } else if (toState.name != 'challenge' && GameService.hasChallenge()) {
+        /*} else if (toState.name != 'challenge' && GameService.hasChallenge()) {
           event.preventDefault();
           //$state.go('challenge', { id: MemberService.getChallengeId() }, { reload: fromState.name === 'challenge' });
           return;
@@ -97,7 +103,7 @@
           return;
         //} else if (fromState.name === toState.name) {
         //  event.preventDefault();
-        //  return;
+        //  return;*/
         }
       }
     });

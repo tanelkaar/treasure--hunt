@@ -66,7 +66,7 @@
     function start() {
       GameService.startGame(ctrl.game.id, ctrl.team.id).then(() => {
         MessageService.showSuccess({ text: 'Mäng läks!' });
-        //$state.go('map');
+        $state.go('map');
       });
     }
   }

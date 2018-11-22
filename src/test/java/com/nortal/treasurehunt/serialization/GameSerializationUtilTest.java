@@ -2,6 +2,7 @@ package com.nortal.treasurehunt.serialization;
 
 import com.google.gson.Gson;
 import com.nortal.treasurehunt.enums.ChallengeAnswerType;
+import com.nortal.treasurehunt.enums.TeamState;
 import com.nortal.treasurehunt.model.Challenge;
 import com.nortal.treasurehunt.model.ChallengeOption;
 import com.nortal.treasurehunt.model.Coordinates;
@@ -28,14 +29,14 @@ public class GameSerializationUtilTest {
   private Game createTestGame() {
     Game game =
         new Game("game1", new Coordinates(BigDecimal.ZERO, BigDecimal.valueOf(-77.988496046)), new ArrayList<>());
-    Team team1 = new Team("team1");
+    Team team1 = new Team("team1", null, null);
     Member member1 = createTestMember("id1", "Member Name I");
     team1.addMember(member1);
-    team1.setState(Team.TeamState.STARTING);
+    team1.setState(TeamState.STARTING);
     // team1.logTrail(new TrailLog(new Coordinates(BigDecimal.valueOf(-65.0014),
     // BigDecimal.valueOf(99.4378))));
 
-    Team team2 = new Team("teäm2");
+    Team team2 = new Team("teäm2", null, null);
     team2.getMembers().add(createTestMember("id2", "name2"));
     team2.getMembers().add(createTestMember("id3", "awefaw"));
     game.getTeams().add(team1);

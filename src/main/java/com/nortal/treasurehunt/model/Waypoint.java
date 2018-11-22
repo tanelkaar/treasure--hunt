@@ -1,25 +1,13 @@
 package com.nortal.treasurehunt.model;
 
-import com.nortal.treasurehunt.enums.ChallengeState;
-import com.nortal.treasurehunt.enums.ChallengeType;
-
 public class Waypoint {
-  private Long challengeId;
+  public static final int WAYPOINT_RANGE = 20;
+
   private Coordinates coords;
-  private int range;
-  private ChallengeType type;
-  private ChallengeState state;
+  private int range = WAYPOINT_RANGE;
 
-  public Waypoint(Challenge challenge, ChallengeState state) {
-    this.challengeId = challenge.getId();
-    this.coords = challenge.getCoordinates();
-    this.range = Challenge.CHALLENGE_BOUNDARIES_MARGIN_METERS;
-    this.type = challenge.getType();
-    this.state = state;
-  }
-
-  public Long getChallengeId() {
-    return challengeId;
+  public Waypoint(Coordinates coords) {
+    this.coords = coords;
   }
 
   public Coordinates getCoords() {
@@ -28,13 +16,5 @@ public class Waypoint {
 
   public int getRange() {
     return range;
-  }
-
-  public ChallengeType getType() {
-    return type;
-  }
-
-  public ChallengeState getState() {
-    return state;
   }
 }

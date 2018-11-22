@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Challenge {
-  public static final int CHALLENGE_BOUNDARIES_MARGIN_METERS = 20;
-
   private Long id;
   private Coordinates coordinates;
   private String text;
@@ -15,6 +13,7 @@ public class Challenge {
   private ChallengeAnswerType answerType;
   private String image;
   private String video;
+  private String url;
   private List<ChallengeOption> options = new ArrayList<>();
 
   public Long getId() {
@@ -71,6 +70,14 @@ public class Challenge {
 
   public void setVideo(String video) {
     this.video = video;
+  }
+
+  public String getUrl() {
+    return url;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
   }
 
   public List<ChallengeOption> getOptions() {
