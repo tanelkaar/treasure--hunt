@@ -22,7 +22,7 @@
     };
   }
 
-  function GameService($rootScope, $q, $http, $state, $interval, jwtHelper, MessageService, TEAM_STATE, CHALLENGE_STATE) {
+  function GameService($rootScope, $q, $http, $state, $interval, jwtHelper, MessageService, TEAM_STATE, CHALLENGE_STATE, MESSAGE_CODES) {
     let _authData;
     let _gameToken;
 
@@ -58,15 +58,8 @@
       startChallenge: startChallenge,
       completeChallenge: completeChallenge,
     };
-    init();
+    startTracking(); // for testing
     return service;
-
-    function init() {
-      startTracking();
-      _mapWatcher = $interval(() => {
-        pollMap();
-      }, 2000);
-    }
 
     function isCompatible() {
       return !!navigator.geolocation;
@@ -85,14 +78,6 @@
       _authData = jwtHelper.decodeToken(_gameToken);
 
       console.log('AUTH: ', _authData);
-      /*
-      if (!isMember()) {
-        $state.go('main');
-      } else if (_authData.challengeId) {
-        $state.go('challenge', { id: _authData.challengeId });
-      } else if (_authData.gameId) {
-        $state.go('map');
-      }*/
     }
 
     function isMember() {
@@ -125,7 +110,6 @@
     }
 
     function register() {
-      console.log('register')
       return $http.post('/api/game/register');
     }
 
@@ -152,6 +136,12 @@
       return $http.post('/api/game/start', {
         gameId: gameId,
         teamId: teamId
+      }).then(() => {
+        MessageService.showInfo({ text: MESSAGE_CODES.GAME_START });
+        start();
+        $state.go('map');
+      }, (e) => {
+        console.error('ERROR (startGame): ', e);
       });
     }
 
@@ -165,21 +155,27 @@
     }
 
     function startChallenge(id) {
-      return getCurrentPos().then((pos) => {
-        return $http.post('/api/game/challenge/' + id + '/start', pos);
-      });
+      return $http.post('/api/game/challenge/' + id + '/start');
     }
 
     function completeChallenge(response) {
-      return getCurrentPos().then((pos) => {
-        response.coords = pos;
-        return $http.post('/api/game/challenge/' + response.challengeId + '/complete', response);
+      $http.post('/api/game/challenge/' + response.challengeId + '/complete', response).then(() => {
+        MessageService.showInfo({ text: MESSAGE_CODES.CHALLENGE_SUCCESSFULLY_COMPLETED });
+        $state.go('map');
+      }, (e) => {
+        console.error('ERROR (completeChallenge): ', e);
       });
+    }
+
+    function start() {
+      // startTracking(); - this shoud be here for testing we call it on init
+      startMapPoller();
     }
 
     function startTracking() {
       console.log('start tracking');
-      if (!isCompatible() || _posWatcher) {
+      if (!isCompatible()) {
+        MessageService.showError({ text: MESSAGE_CODES.DEVICE_NOT_COMPATIBLE });
         return;
       }
       _posWatcher = navigator.geolocation.watchPosition((pos) => {
@@ -190,17 +186,26 @@
         };
         _posDefer.resolve(_currentPos);
         sendLocation(_currentPos);
-      }, (err) => {
-        console.error('error watching current pos: ', err);
+      }, (e) => {
+        console.error('ERROR (posWatcher): ', err);
       }, _posOpts);
+    }
+
+    function startMapPoller() {
+      loadMap();
+      _mapWatcher = $interval(() => {
+        loadMap();
+      }, 2000);
     }
 
     function sendLocation(pos) {
       $http.post('/api/game/location', pos).then((rsp) => {
+      }, (e) => {
+        console.error('ERROR (sendLocation): ', e);
       });
     }
 
-    function pollMap() {
+    function loadMap() {
       if (!hasGame()) {
         return;
       }
@@ -209,7 +214,8 @@
         _mapDefer.resolve(_map);
 
         if (_map.state === TEAM_STATE.COMPLETED) {
-          MessageService.showInfo({ code: 'TEAM_COMPLETED' });
+          MessageService.showInfo({ text: MESSAGE_CODES.TEAM_COMPLETED });
+          // TODO: reset auth data
           _authData.gameId = null;
           $state.go('main');
           return;
@@ -222,6 +228,8 @@
 
         $rootScope.$emit('mapRefresh', _map);
         $state.go('map');
+      }, (e) => {
+        console.error('ERROR (loadMap): ', e);
       });
     }
 
@@ -232,9 +240,11 @@
       navigator.geolocation.clearWatch(_posWatcher);
     }
 
+    // TODO: to be removed
     function getCurrentPos() {
       console.log('get current pos');
       if (!isCompatible()) {
+        MessageService.showError({ text: MESSAGE_CODES.DEVICE_NOT_COMPATIBLE });
         _posDefer = $q.defer();
         _posDefer.reject();
         return _posDefer.promise;
@@ -244,18 +254,6 @@
         _posDefer.resolve(_currentPos);
       }
       return _posDefer.promise;
-
-      /*
-      navigator.geolocation.getCurrentPosition((pos) => {
-        _posDefer.resolve(_currentPos = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude
-        });
-      }, (err) => {
-        console.error('error getting current pos: ', err);
-        getCurrentPos();
-      }, _posOpts);
-      return _posDefer.promise;*/
     }
   }
 })();

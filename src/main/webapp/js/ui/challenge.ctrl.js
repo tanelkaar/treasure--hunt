@@ -12,7 +12,7 @@
     }
   }
 
-  function ChallengeCtrl(challenge, $state, $stateParams, GameService, MessageService, CHALLENE_TYPE, ANSWER_TYPE) {
+  function ChallengeCtrl(challenge, $state, GameService, MessageService, CHALLENE_TYPE, ANSWER_TYPE) {
     console.log('challenge ctrl');
     let ctrl = {
       response: {
@@ -78,11 +78,7 @@
         });
       }
       console.log('ANSWER: ', ctrl.response);
-
-      GameService.completeChallenge(ctrl.response).then(() => {
-        MessageService.showSuccess({ text: challenge.type === CHALLENE_TYPE.QUESTION ? 'Küsimus edukalt vastatud!' : 'Ülesanne edukalt lõpetatud!' });
-        $state.go('map');
-      });
+      GameService.completeChallenge(ctrl.response);
     }
   }
 })();

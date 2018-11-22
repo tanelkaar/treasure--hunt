@@ -5,9 +5,8 @@
     .module('treasurehunt.ui')
     .controller('MainCtrl', MainCtrl);
 
-  function MainCtrl(games, $state, GameService, MessageService) {
+  function MainCtrl(games, GameService) {
     let ctrl = {
-      isCompatible: GameService.isCompatible,
       game: null,
       team: null,
       games: games,
@@ -64,10 +63,7 @@
     }
 
     function start() {
-      GameService.startGame(ctrl.game.id, ctrl.team.id).then(() => {
-        MessageService.showSuccess({ text: 'Mäng läks!' });
-        $state.go('map');
-      });
+      GameService.startGame(ctrl.game.id, ctrl.team.id);
     }
   }
 })();

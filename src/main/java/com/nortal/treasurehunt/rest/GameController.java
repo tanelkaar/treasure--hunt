@@ -70,9 +70,8 @@ public class GameController {
   }
 
   @PostMapping("/challenge/{challengeId}/start")
-  public ResponseEntity<Challenge> startChallenge(@PathVariable("challengeId") Long challengeId,
-      @RequestBody Coordinates coords) {
-    return ResponseEntity.ok(gameService.startChallenge(challengeId, coords));
+  public ResponseEntity<Challenge> startChallenge(@PathVariable("challengeId") Long challengeId) {
+    return ResponseEntity.ok(gameService.startChallenge(challengeId));
   }
 
   @PostMapping("/challenge/{challengeId}/complete")

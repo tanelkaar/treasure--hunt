@@ -195,8 +195,8 @@ public class GameService {
     return getGame().getMap(getAuthData().getTeamId());
   }
 
-  public Challenge startChallenge(Long challengeId, Coordinates coords) {
-    return getGame().startChallenge(getAuthData().getTeamId(), challengeId, coords);
+  public Challenge startChallenge(Long challengeId) {
+    return getGame().startChallenge(getAuthData().getTeamId(), challengeId);
   }
 
   public void completeChallenge(ChallengeResponse response) {

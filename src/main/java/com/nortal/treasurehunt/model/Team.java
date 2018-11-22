@@ -52,7 +52,11 @@ public class Team {
 
   public void addMember(Member member) {
     synchronized (members) {
-      if (members.stream().anyMatch(m -> m.getId().equals(member.getId()))) {
+      if (members.stream().anyMatch(
+
+          m -> m.getId().equals(member.getId())))
+
+      {
         return;
       }
       this.members.add(member);
@@ -88,27 +92,40 @@ public class Team {
   }
 
   public ChallengeResponse getResponse(Long challengeId) {
-    return responses.stream().filter(r -> r.getChallengeId().equals(challengeId)).findFirst().orElse(null);
+    return responses.stream().filter(
+
+        r -> r.getChallengeId().equals(challengeId)).findFirst().orElse(null);
+
   }
 
   public ChallengeResponse getResponse(ChallengeState state) {
-    return responses.stream().filter(r -> state.equals(r.getState())).findFirst().orElse(null);
+    return responses.stream().filter(
+
+        r -> state.equals(r.getState())).findFirst().orElse(null);
+
+  }
+
+  public void createChallenge(Long challengeId) {
+    synchronized (responses) {
+      LOG.info("Creating team {} challenge {}", name, challengeId);
+      ChallengeResponse response = new ChallengeResponse();
+      response.setChallengeId(challengeId);
+      response.setState(ChallengeState.IN_PROGRESS);
+      responses.add(response);
+    }
   }
 
   public void startChallenge(Long challengeId) {
     synchronized (responses) {
       ChallengeResponse response = getResponse(challengeId);
-      if (response != null) {
-        if (response.isCompleted()) {
-          throw new TreasurehuntException(ErrorCode.CHALLENGE_COMPLETED);
-        }
-        LOG.info("Team {} challenge {} already started - not creating new response", name, challengeId);
-        return;
+      if (response == null) {
+        throw new TreasurehuntException(ErrorCode.INVALID_CHALLENGE);
       }
-      LOG.info("Creating team {} challenge {}", name, challengeId);
-      responses.add(response = new ChallengeResponse());
-      response.setChallengeId(challengeId);
-      response.setState(ChallengeState.IN_PROGRESS);
+      if (response.isCompleted()) {
+        throw new TreasurehuntException(ErrorCode.CHALLENGE_COMPLETED);
+      }
+      LOG.info("Team {} challenge {} already started - not creating new response", name, challengeId);
+      return;
     }
   }
 

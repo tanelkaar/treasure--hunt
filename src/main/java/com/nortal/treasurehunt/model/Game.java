@@ -117,7 +117,7 @@ public class Game {
     return challenge;
   }
 
-  public Challenge startChallenge(Long teamId, Long challengeId, Coordinates coords) {
+  public Challenge startChallenge(Long teamId, Long challengeId) {
     Challenge challenge = getChallenge(challengeId);
     // if (!CoordinatesUtil
     // .intersects(new Boundaries(challenge.getCoordinates(),
@@ -139,7 +139,7 @@ public class Game {
     challenges.stream()
         .filter(c -> CoordinatesUtil.intersects(new Boundaries(c.getCoordinates(), Waypoint.WAYPOINT_RANGE), coords)
             && !team.isCompleted(c.getId()))
-        .forEach(c -> team.startChallenge(c.getId()));
+        .forEach(c -> team.createChallenge(c.getId()));
     return getMap(teamId);
   }
 

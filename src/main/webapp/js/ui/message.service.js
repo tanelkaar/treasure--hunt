@@ -4,14 +4,17 @@
   angular
     .module('treasurehunt.ui')
     .constant('MESSAGE_CODES', {
+      'GAME_START': 'Kivi kotti!',
       'UNEXPECTED_ERROR': 'Ootamatu viga!',
+      'DEVICE_NOT_COMPATIBLE': 'Seade ei toeta positsioneerimist!',
       'INVALID_INPUT': 'Ebakorrektne sisend!',
       'GAME_EXISTS': 'Sellise nimega mäng on juba olemas!',
       'TEAM_EXISTS': 'Sellise nimega meeskond on juba olemas!',
       'INVALID_MEMBER': 'Ebakorretne mängu osaline!',
       'INVALID_CHALLENGE': 'Selline ülesanne puudub!',
       'CHALLENGE_COMPLETED': 'Ülesanne on juba lahendatud!',
-      'TEAM_COMPLETED': 'Meeskond on mängu lõpetanud!'
+      'TEAM_COMPLETED': 'Meeskond on mängu lõpetanud!',
+      'CHALLENGE_SUCCESSFULLY_COMPLETED': 'Ülesanne edukalt sooritatud!'
     })
     .factory('MessageService', MessageService)
     .factory('errorInterceptor', errorInterceptor)
