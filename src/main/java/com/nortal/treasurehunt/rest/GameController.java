@@ -96,7 +96,7 @@ public class GameController {
     return GameSerializationUtil.serializeToJSON(gameService.getGame());
   }
 
-  @PostMapping("/game/import")
+  @PostMapping("/import")
   @ResponseStatus(code = HttpStatus.OK)
   public void importGame(@RequestBody String jsonGameData) {
     LOG.info("import game");

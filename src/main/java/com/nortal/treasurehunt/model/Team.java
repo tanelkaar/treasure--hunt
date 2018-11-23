@@ -127,6 +127,12 @@ public class Team {
     currentChallenge.setState(com.nortal.treasurehunt.model.TeamChallenge.ChallengeState.COMPLETED);
     currentChallenge.setChallengeResponse(response);
     completedChallenges.add(currentChallenge);
+
+    // make depending challenge visible
+    if(currentChallenge.getChallenge().getDependingChallenge() != null) {
+      uncompletedChallenges.add(currentChallenge.getChallenge().getDependingChallenge());
+    }
+
     currentChallenge = null;
     if (uncompletedChallenges.isEmpty()) {
       this.state = TeamState.COMPLETING;

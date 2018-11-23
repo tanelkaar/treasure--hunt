@@ -120,6 +120,14 @@ public class GameService {
 
   public void addGame(Game game) {
     synchronized (games) {
+      try {
+        Game existing = getGame(game.getId());
+        if (existing != null) {
+          games.remove(existing);
+        }
+      } catch (TreasurehuntException e) {
+        // Ignore non-existing game
+      }
       games.add(game);
     }
   }
@@ -163,6 +171,13 @@ public class GameService {
       BeanUtils.copyProperties(tempChallenges.get((int) (Math.random() * 6)), c);
       c.setId(IDUtil.getNext());
       c.setCoordinates(CoordinatesUtil.randomize(coords));
+      if (c.getDependingChallenge() != null) {
+        Challenge d = new Challenge();
+        BeanUtils.copyProperties(c.getDependingChallenge(), d);
+        d.setId(IDUtil.getNext());
+        d.setCoordinates(CoordinatesUtil.randomize(coords));
+        c.setDependingChallenge(d);
+      }
       challenges.add(c);
     }
     return challenges;
@@ -202,10 +217,16 @@ public class GameService {
     c.setAnswerType(ChallengeAnswerType.TEXT);
     tempChallenges.add(c);
 
+    Challenge cd = new Challenge();
+    cd.setType(ChallengeType.TASK);
+    cd.setText("Lisaülesanne peale luuletust!");
+    cd.setAnswerType(ChallengeAnswerType.TEXT);
+
     c = new Challenge();
     c.setType(ChallengeType.TASK);
     c.setText("Mõtle välja mingi äge luuletus!");
     c.setAnswerType(ChallengeAnswerType.TEXT);
+    c.setDependingChallenge(cd);
     tempChallenges.add(c);
 
     c = new Challenge();
@@ -213,5 +234,10 @@ public class GameService {
     c.setText("Tee meeskonnast pilt!");
     c.setAnswerType(ChallengeAnswerType.IMAGE);
     tempChallenges.add(c);
+  }
+
+  public void replace(Game existing, Game game) {
+    // TODO Auto-generated method stub
+
   }
 }

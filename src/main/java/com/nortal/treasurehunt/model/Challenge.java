@@ -16,6 +16,8 @@ public class Challenge {
   private String url;
   private List<ChallengeOption> options = new ArrayList<>();
   private transient Boundaries boundaries;
+  // This is a depending challenge, that is not visible until this challenge has been resolved
+  private Challenge dependingChallenge;
 
   public Long getId() {
     return id;
@@ -94,5 +96,13 @@ public class Challenge {
       boundaries = new Boundaries(coordinates, Waypoint.WAYPOINT_RANGE);
     }
     return boundaries;
+  }
+
+  public Challenge getDependingChallenge() {
+    return dependingChallenge;
+  }
+
+  public void setDependingChallenge(Challenge dependingChallenge) {
+    this.dependingChallenge = dependingChallenge;
   }
 }
