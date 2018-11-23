@@ -16,10 +16,9 @@ import com.nortal.treasurehunt.model.Coordinates;
 import com.nortal.treasurehunt.model.Game;
 import com.nortal.treasurehunt.model.GameConfig;
 import com.nortal.treasurehunt.model.GameMap;
+import com.nortal.treasurehunt.model.GameToken;
 import com.nortal.treasurehunt.model.Member;
 import com.nortal.treasurehunt.model.Team;
-import com.nortal.treasurehunt.security.GameAuth;
-import com.nortal.treasurehunt.security.GameAuthData;
 import com.nortal.treasurehunt.util.CoordinatesUtil;
 import com.nortal.treasurehunt.util.IDUtil;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -42,15 +40,16 @@ public class GameService {
 
   private List<Game> games = new ArrayList<>();
   private List<Member> members = new ArrayList<>();
+  private ThreadLocal<GameToken> tokenStore = new ThreadLocal<>();
 
-  public boolean isValid(GameAuthData member) {
+  private boolean isValid(GameToken member) {
     if (member == null || member.getMemberId() == null) {
       return false;
     }
     return getMember(member.getMemberId()) != null;
   }
 
-  public Member createMember() {
+  private Member createMember() {
     LOG.info("Creating new member - having {} members so far", members.size());
     Member member = new Member();
     member.setId(UUID.randomUUID().toString());
@@ -64,35 +63,65 @@ public class GameService {
     return members.stream().filter(m -> m.getId().equals(memberId)).findFirst().orElse(null);
   }
 
-  public GameAuthData getAuthData(String authToken) {
-    DecodedJWT jwt = JWT.require(ALGORITHM).build().verify(authToken);
-    return new GameAuthData(jwt.getClaim("memberId").asString(),
-        jwt.getClaim("gameId").asLong(),
-        jwt.getClaim("teamId").asLong(),
-        jwt.getClaim("challengeId").asLong());
+  public void initToken(String tokenJwt) {
+    LOG.info("init token by jwt={}", tokenJwt);
+    GameToken token = readToken(tokenJwt);
+    if (token == null) {
+      token = new GameToken(createMember().getId());
+    }
+    this.tokenStore.set(token);
   }
 
-  public GameAuthData getAuthData() {
-    return ((GameAuth) SecurityContextHolder.getContext().getAuthentication()).getDetails();
+  private GameToken readToken(String tokenJwt) {
+    if (StringUtils.isBlank(tokenJwt)) {
+      return null;
+    }
+
+    GameToken token = null;
+    try {
+      DecodedJWT jwt = JWT.require(ALGORITHM).build().verify(tokenJwt);
+      token = new GameToken(jwt.getClaim("memberId").asString(),
+          jwt.getClaim("gameId").asLong(),
+          jwt.getClaim("teamId").asLong());
+      if (!isValid(token)) {
+        LOG.info("invalid member by token={}", tokenJwt);
+        return null;
+      }
+    } catch (Exception e) {
+      LOG.error(String.format("Unable to verify token=%s", tokenJwt), e);
+    }
+    return token;
   }
 
-  public String getAuthToken() {
-    GameAuthData authData = prepareAuthData();
+  public GameToken getToken() {
+    return tokenStore.get();
+  }
+
+  public String getTokenJwt() {
+    GameToken token = prepareToken();
     return JWT.create()
-        .withClaim("memberId", authData.getMemberId())
-        .withClaim("gameId", authData.getGameId())
-        .withClaim("teamId", authData.getTeamId())
-        .withClaim("challengeId", authData.getChallengeId())
+        .withClaim("memberId", token.getMemberId())
+        .withClaim("gameId", token.getGameId())
+        .withClaim("teamId", token.getTeamId())
         .sign(ALGORITHM);
   }
 
-  public void logAuthData() {
-    GameAuthData authData = getAuthData();
-    LOG.info("Auth data: memberId={}, gameId={}, teamId={}, challengeId={}",
-        authData.getMemberId(),
-        authData.getGameId(),
-        authData.getTeamId(),
-        authData.getChallengeId());
+  private GameToken prepareToken() {
+    GameToken token = getToken();
+    if (token.getGameId() == null) {
+      return token;
+    }
+
+    Game game = getGame();
+    // token.setGameId(game.getId()); -- avoid for now to access main
+    Team team = game.getTeam(token.getTeamId());
+    // token.setTeamId(team.getId()); -- avoid for now to access main
+    return token;
+  }
+
+  public void logToken() {
+    GameToken token = getToken();
+    LOG.info("token memberId={}, gameId={}, teamId={}", token.getMemberId(), token.getGameId(), token.getTeamId());
   }
 
   public List<GameDTO> getGames() {
@@ -112,25 +141,10 @@ public class GameService {
   }
 
   public Game getGame() {
-    GameAuthData authData = getAuthData();
-    Game game = getGame(authData.getGameId());
-    game.getTeam(authData.getTeamId()).getMember(authData.getMemberId());
+    GameToken token = getToken();
+    Game game = getGame(token.getGameId());
+    game.getTeam(token.getTeamId()).getMember(token.getMemberId());
     return game;
-  }
-
-  private GameAuthData prepareAuthData() {
-    GameAuthData authData = getAuthData();
-    if (authData.getGameId() == null) {
-      return authData;
-    }
-
-    Game game = getGame();
-    // authData.setGameId(game.getId()); -- avoid for now to access main
-    Team team = game.getTeam(authData.getTeamId());
-    // authData.setTeamId(team.getId()); -- avoid for now to access main
-    Challenge currentChallenge = team.getCurrentChallenge();
-    authData.setChallengeId(currentChallenge != null ? currentChallenge.getId() : null);
-    return authData;
   }
 
   private GameDTO convert(Game game) {
@@ -184,30 +198,30 @@ public class GameService {
   }
 
   public void start(Long gameId, Long teamId) {
-    GameAuthData authData = getAuthData();
-    authData.setGameId(gameId);
-    authData.setTeamId(teamId);
-    getGame(gameId).getTeam(teamId).addMember(getMember(authData.getMemberId()));
+    GameToken token = getToken();
+    token.setGameId(gameId);
+    token.setTeamId(teamId);
+    getGame(gameId).getTeam(teamId).addMember(getMember(token.getMemberId()));
   }
 
   public GameMap getMap() {
-    return getGame().getTeam(getAuthData().getTeamId()).getMap();
+    return getGame().getTeam(getToken().getTeamId()).getMap();
   }
 
   public Challenge getCurrentChallenge() {
-    Challenge challenge = getGame().getTeam(getAuthData().getTeamId()).getCurrentChallenge();
-    if(challenge == null) {
+    Challenge challenge = getGame().getTeam(getToken().getTeamId()).getCurrentChallenge();
+    if (challenge == null) {
       throw new TreasurehuntException(ErrorCode.CHALLENGE_NOT_STARTED);
     }
     return challenge;
   }
 
   public void completeChallenge(ChallengeResponse response) {
-    getGame().getTeam(getAuthData().getTeamId()).completeChallenge(response);
+    getGame().getTeam(getToken().getTeamId()).completeChallenge(response);
   }
 
   public GameMap sendLocation(Coordinates coords) {
-    return getGame().getTeam(getAuthData().getTeamId()).sendLocation(getAuthData().getMemberId(), coords);
+    return getGame().getTeam(getToken().getTeamId()).sendLocation(getToken().getMemberId(), coords);
   }
 
   private List<Challenge> generateChallenges(Coordinates coords) {

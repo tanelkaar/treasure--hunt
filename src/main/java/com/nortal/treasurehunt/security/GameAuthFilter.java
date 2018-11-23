@@ -1,5 +1,6 @@
 package com.nortal.treasurehunt.security;
 
+import com.nortal.treasurehunt.model.GameToken;
 import com.nortal.treasurehunt.service.GameService;
 import java.io.IOException;
 import java.util.stream.Stream;
@@ -18,6 +19,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 
+@Deprecated
 public class GameAuthFilter extends AbstractAuthenticationProcessingFilter {
   private static final Logger LOG = LoggerFactory.getLogger(GameAuthFilter.class);
   public static final String GAME_TOKEN = "game-token";
@@ -36,8 +38,9 @@ public class GameAuthFilter extends AbstractAuthenticationProcessingFilter {
     Authentication auth = authenticate(getAuthCookie(request));
     // missing or invalid cookie - create member
     if (auth == null) {
-      auth =
-          getAuthenticationManager().authenticate(new GameAuth(new GameAuthData(gameService.createMember().getId())));
+      // auth =
+      // getAuthenticationManager().authenticate(new GameAuth(new
+      // GameAuthData(gameService.createMember().getId())));
     }
 
     if (!auth.isAuthenticated()) {
@@ -47,7 +50,7 @@ public class GameAuthFilter extends AbstractAuthenticationProcessingFilter {
   }
 
   public Authentication authenticate(Cookie authCookie) {
-    GameAuthData authData = readAndVerify(authCookie);
+    GameToken authData = readAndVerify(authCookie);
     if (authData == null) {
       return null;
     }
@@ -55,14 +58,14 @@ public class GameAuthFilter extends AbstractAuthenticationProcessingFilter {
     return auth.isAuthenticated() ? auth : null;
   }
 
-  public GameAuthData readAndVerify(Cookie authCookie) {
+  public GameToken readAndVerify(Cookie authCookie) {
     if (authCookie == null) {
       return null;
     }
 
     String gameToken = authCookie.getValue();
     try {
-      return gameService.getAuthData(gameToken);
+      // return gameService.getAuthData(gameToken);
     } catch (Exception e) {
       LOG.error(String.format("Unable to verify authToken=%s", gameToken), e);
     }
@@ -85,6 +88,6 @@ public class GameAuthFilter extends AbstractAuthenticationProcessingFilter {
 
     chain.doFilter(request, response);
 
-    gameService.logAuthData();
+    gameService.logToken();
   }
 }

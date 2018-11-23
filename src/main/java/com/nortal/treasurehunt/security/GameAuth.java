@@ -1,9 +1,11 @@
 package com.nortal.treasurehunt.security;
 
+import com.nortal.treasurehunt.model.GameToken;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 
+@Deprecated
 public class GameAuth extends AbstractAuthenticationToken {
-  public GameAuth(GameAuthData authData) {
+  public GameAuth(GameToken authData) {
     super(null);
     super.setDetails(authData);
     super.setAuthenticated(true);
@@ -20,7 +22,7 @@ public class GameAuth extends AbstractAuthenticationToken {
   }
 
   @Override
-  public GameAuthData getDetails() {
-    return (GameAuthData) super.getDetails();
+  public GameToken getDetails() {
+    return (GameToken) super.getDetails();
   }
 }

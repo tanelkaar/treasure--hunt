@@ -8,11 +8,13 @@ import com.nortal.treasurehunt.model.Coordinates;
 import com.nortal.treasurehunt.model.Game;
 import com.nortal.treasurehunt.model.GameConfig;
 import com.nortal.treasurehunt.model.GameMap;
-import com.nortal.treasurehunt.security.GameAuthData;
+import com.nortal.treasurehunt.model.GameToken;
 import com.nortal.treasurehunt.service.GameService;
 import com.nortal.treasurehunt.util.GameSerializationUtil;
 import java.util.List;
 import javax.annotation.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,18 +29,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/game")
 public class GameController {
+  private static final Logger LOG = LoggerFactory.getLogger(GameController.class);
+
   @Resource
   private GameService gameService;
 
   @PostMapping("/register")
   @ResponseStatus(code = HttpStatus.OK)
   public ResponseEntity<Void> register() {
-    GameAuthData authData = gameService.getAuthData();
+    GameToken token = gameService.getToken();
     // reset auth member game for now - later we should init game info according
     // to server state
-    authData.setGameId(null);
-    authData.setTeamId(null);
-    authData.setChallengeId(null);
+    // token.setGameId(null);
+    // token.setTeamId(null);
+    LOG.info("REGISTER");
     return ResponseEntity.noContent().build();
   }
 
@@ -59,8 +63,8 @@ public class GameController {
 
   @PostMapping("/start")
   @ResponseStatus(code = HttpStatus.OK)
-  public ResponseEntity<Void> start(@RequestBody GameAuthData authData) {
-    gameService.start(authData.getGameId(), authData.getTeamId());
+  public ResponseEntity<Void> start(@RequestBody GameToken token) {
+    gameService.start(token.getGameId(), token.getTeamId());
     return ResponseEntity.noContent().build();
   }
 
@@ -85,8 +89,8 @@ public class GameController {
   @PostMapping("/location")
   @ResponseStatus(code = HttpStatus.OK)
   public ResponseEntity<GameMap> sendLocation(@RequestBody Coordinates coords) {
-    GameAuthData authData = gameService.getAuthData();
-    if (authData.getGameId() == null) {
+    GameToken token = gameService.getToken();
+    if (token.getGameId() == null) {
       return ResponseEntity.noContent().build();
     }
     return ResponseEntity.ok(gameService.sendLocation(coords));
