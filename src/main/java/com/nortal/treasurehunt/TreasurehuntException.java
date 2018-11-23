@@ -9,8 +9,12 @@ public class TreasurehuntException extends RuntimeException {
     this(code, null);
   }
 
-  public TreasurehuntException(ErrorCode code, String message) {
-    super(message);
+  public TreasurehuntException(ErrorCode code, Throwable e) {
+    this(code, null, e);
+  }
+
+  public TreasurehuntException(ErrorCode code, String message, Throwable e) {
+    super(message, e);
     this.code = code;
   }
 

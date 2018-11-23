@@ -13,7 +13,7 @@
       'INVALID_MEMBER': 'Ebakorretne mängu osaline!',
       'INVALID_CHALLENGE': 'Selline ülesanne puudub!',
       'CHALLENGE_COMPLETED': 'Ülesanne on juba lahendatud!',
-      'TEAM_COMPLETED': 'Meeskond on mängu lõpetanud!',
+      'GAME_OVER': 'Meeskond on mängu lõpetanud!',
       'CHALLENGE_SUCCESSFULLY_COMPLETED': 'Ülesanne edukalt sooritatud!'
     })
     .factory('MessageService', MessageService)

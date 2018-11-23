@@ -11,20 +11,29 @@
     $httpProvider.interceptors.push('gameAuthInterceptor');
   }
 
-  function gameAuthInterceptor($cookies, $injector) {
-    return {
+  function gameAuthInterceptor($q, $cookies, $injector) {
+    let interceptor = {
       response: (rsp) => {
-        if (rsp.config.url.startsWith('/api/game') && $cookies.get('game-token')) {
-          $injector.get('GameService').authData($cookies.get('game-token'));
-        }
+        readToken(rsp);
         return rsp;
+      },
+      responseError: (rsp) => {
+        readToken(rsp);
+        return $q.reject(rsp);
       }
     };
+    return interceptor;
+
+    function readToken(rsp) {
+      if (rsp.config.url.startsWith('/api/game')) {
+        $injector.get('GameService').readToken($cookies.get('game-token'));
+      }
+    }
   }
 
-  function GameService($rootScope, $q, $http, $state, $interval, jwtHelper, MessageService, TEAM_STATE, CHALLENGE_STATE, MESSAGE_CODES) {
-    let _authData;
-    let _gameToken;
+  function GameService($rootScope, $q, $http, $state, $interval, $cookies, jwtHelper, MessageService, TEAM_STATE, CHALLENGE_STATE, MESSAGE_CODES) {
+    let _token;
+    let _tokenJwt;
 
     let _posWatcher = null;
     let _currentPos = null;
@@ -40,8 +49,7 @@
     let _mapWatcher = null;
 
     let service = {
-      isCompatible: isCompatible,
-      authData: authData,
+      readToken: readToken,
       isMember: isMember,
       hasGame: hasGame,
       hasChallenge: hasChallenge,
@@ -58,26 +66,26 @@
       startChallenge: startChallenge,
       completeChallenge: completeChallenge,
     };
-    startTracking(); // for testing
+    init();
     return service;
-
-    function isCompatible() {
-      return !!navigator.geolocation;
+    
+    function init() {
+      startTracking(); // for testing
+      readToken($cookies.get('game-token'));
     }
 
-    function authData(gameToken) {
-      if (!gameToken) {
-        _gameToken = null;
-        _authData = null;
+    function readToken(tokenJwt) {
+      if (!tokenJwt) {
+        _tokenJwt = null;
+        _token = null;
         return;
       }
-      if (_gameToken === gameToken) {
+      if (_tokenJwt === tokenJwt) {
         return;
       }
-      _gameToken = gameToken;
-      _authData = jwtHelper.decodeToken(_gameToken);
-
-      console.log('AUTH: ', _authData);
+      _tokenJwt = tokenJwt;
+      _token = jwtHelper.decodeToken(_tokenJwt);
+      console.log('AUTH: ', $state.current.name, _token);
     }
 
     function isMember() {
@@ -85,11 +93,19 @@
     }
 
     function getMemberId() {
-      return _authData ? _authData.memberId : null;
+      return _token ? _token.memberId : null;
     }
 
     function hasGame() {
-      return _authData ? _authData.gameId : null;
+      return !!getGameId();
+    }
+
+    function getGameId() {
+      return _token ? _token.gameId : null; 
+    }
+
+    function getTeamId() {
+      return _token ? _token.teamId : null; 
     }
 
     function hasChallenge() {
@@ -110,7 +126,7 @@
     }
 
     function register() {
-      return $http.post('/api/game/register');
+      return $http.post('/api/register');
     }
 
     function getGames() {
@@ -134,15 +150,12 @@
 
     function startGame(gameId, teamId) {
       return $http.post('/api/game/start', {
-        gameId: gameId,
-        teamId: teamId
+        gameId: gameId || getGameId(),
+        teamId: teamId || getTeamId()
       }).then(() => {
         MessageService.showInfo({ text: MESSAGE_CODES.GAME_START });
         start();
-        $state.go('map');
-      }, (e) => {
-        console.error('ERROR (startGame): ', e);
-      });
+      }, handleError);
     }
 
     function getMap() {
@@ -154,28 +167,77 @@
       return _mapDefer.promise;
     }
 
-    function startChallenge(id) {
-      return $http.post('/api/game/challenge/' + id + '/start');
+    function startChallenge() {
+      return $http.post('/api/game/challenge/start');
     }
 
     function completeChallenge(response) {
-      $http.post('/api/game/challenge/' + response.challengeId + '/complete', response).then(() => {
+      $http.post('/api/game/challenge/complete', response).then((rsp) => {
         MessageService.showInfo({ text: MESSAGE_CODES.CHALLENGE_SUCCESSFULLY_COMPLETED });
-        $state.go('map');
-      }, (e) => {
-        console.error('ERROR (completeChallenge): ', e);
-      });
+        refreshMap(rsp);
+      }, handleError);
     }
 
+    // private
     function start() {
-      // startTracking(); - this shoud be here for testing we call it on init
-      startMapPoller();
+      startTracking();
+      loadMap();
+      _mapWatcher = $interval(() => {
+        loadMap();
+      }, 3000);
+      $state.go('map');
+    }
+
+    function exit() {
+      stopTracking();
+      if (_mapWatcher) {
+        $interval.cancel(_mapWatcher);
+      }
+      _token = null;
+      _tokenJwt = null;
+      //$cookies.remove('game-token');
+      $state.go('main');
+    }
+
+    function sendLocation(pos) {
+      if (!hasGame()) { // for testing
+        return;
+      }
+      $http.post('/api/game/location', pos).then(refreshMap, handleError);
+    }
+
+    function loadMap() {
+      $http.get('/api/game/map').then(refreshMap, handleError);
+    }
+
+    function refreshMap(rsp) {
+      _map = rsp.data;
+      _mapDefer.resolve(_map);
+      $rootScope.$emit('mapRefresh', _map);
+
+      if (_map.state === TEAM_STATE.COMPLETED) {
+        MessageService.showInfo({ text: MESSAGE_CODES.GAME_OVER });
+        exit();
+        return;
+      }
+
+      if (hasChallenge()) {
+        $state.go('challenge');
+        return;
+      }
+      $state.go('map');
+    }
+
+    function isCompatible() {
+      return !!navigator.geolocation;
     }
 
     function startTracking() {
-      console.log('start tracking');
       if (!isCompatible()) {
         MessageService.showError({ text: MESSAGE_CODES.DEVICE_NOT_COMPATIBLE });
+        return;
+      }
+      if (_posWatcher) {
         return;
       }
       _posWatcher = navigator.geolocation.watchPosition((pos) => {
@@ -187,57 +249,17 @@
         _posDefer.resolve(_currentPos);
         sendLocation(_currentPos);
       }, (e) => {
-        console.error('ERROR (posWatcher): ', err);
+        console.error('ERROR (posWatcher): ', e);
       }, _posOpts);
-    }
-
-    function startMapPoller() {
-      loadMap();
-      _mapWatcher = $interval(() => {
-        loadMap();
-      }, 2000);
-    }
-
-    function sendLocation(pos) {
-      $http.post('/api/game/location', pos).then((rsp) => {
-      }, (e) => {
-        console.error('ERROR (sendLocation): ', e);
-      });
-    }
-
-    function loadMap() {
-      if (!hasGame()) {
-        return;
-      }
-      $http.get('/api/game/map').then((rsp) => {
-        _map = rsp.data;
-        _mapDefer.resolve(_map);
-
-        if (_map.state === TEAM_STATE.COMPLETED) {
-          MessageService.showInfo({ text: MESSAGE_CODES.TEAM_COMPLETED });
-          // TODO: reset auth data
-          _authData.gameId = null;
-          $state.go('main');
-          return;
-        }
-
-        if (hasChallenge()) {
-          $state.go('challenge', { id: getChallengeId() });
-          return;
-        }
-
-        $rootScope.$emit('mapRefresh', _map);
-        $state.go('map');
-      }, (e) => {
-        console.error('ERROR (loadMap): ', e);
-      });
     }
 
     function stopTracking() {
       if (!isCompatible() || !_posWatcher) {
         return;
       }
+      console.log('stop watcher');
       navigator.geolocation.clearWatch(_posWatcher);
+      _posWatcher = null;
     }
 
     // TODO: to be removed
@@ -254,6 +276,11 @@
         _posDefer.resolve(_currentPos);
       }
       return _posDefer.promise;
+    }
+
+    function handleError(error) {
+      console.error('error: ', error);
+      exit();
     }
   }
 })();

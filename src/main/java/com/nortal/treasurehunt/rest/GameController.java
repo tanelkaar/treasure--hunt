@@ -10,6 +10,7 @@ import com.nortal.treasurehunt.model.GameConfig;
 import com.nortal.treasurehunt.model.GameMap;
 import com.nortal.treasurehunt.model.GameToken;
 import com.nortal.treasurehunt.service.GameService;
+import com.nortal.treasurehunt.service.GameTokenService;
 import com.nortal.treasurehunt.util.GameSerializationUtil;
 import java.util.List;
 import javax.annotation.Resource;
@@ -33,77 +34,72 @@ public class GameController {
 
   @Resource
   private GameService gameService;
-
-  @PostMapping("/register")
-  @ResponseStatus(code = HttpStatus.OK)
-  public ResponseEntity<Void> register() {
-    GameToken token = gameService.getToken();
-    // reset auth member game for now - later we should init game info according
-    // to server state
-    // token.setGameId(null);
-    // token.setTeamId(null);
-    LOG.info("REGISTER");
-    return ResponseEntity.noContent().build();
-  }
+  @Resource
+  private GameTokenService gameTokenService;
 
   @GetMapping("/list")
   public ResponseEntity<List<GameDTO>> getGames() {
+    LOG.info("get games");
     return ResponseEntity.ok(gameService.getGames());
   }
 
   @PostMapping("/add")
   public ResponseEntity<GameDTO> addGame(@RequestBody GameConfig config) {
+    LOG.info("add game");
     return ResponseEntity.ok(gameService.addGame(config));
   }
 
   @PostMapping("/{gameId}/team/add")
   public ResponseEntity<TeamDTO> addTeam(@PathVariable("gameId") Long gameId, @RequestBody TeamDTO team) {
+    LOG.info("add team");
     return ResponseEntity.ok(gameService.addTeam(gameId, team));
   }
 
   @PostMapping("/start")
   @ResponseStatus(code = HttpStatus.OK)
   public ResponseEntity<Void> start(@RequestBody GameToken token) {
+    LOG.info("start");
     gameService.start(token.getGameId(), token.getTeamId());
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/map")
   public ResponseEntity<GameMap> getMap() {
+    LOG.info("get map");
     return ResponseEntity.ok(gameService.getMap());
   }
 
-  @PostMapping("/challenge/{challengeId}/start")
-  public ResponseEntity<Challenge> startChallenge(@PathVariable("challengeId") Long challengeId) {
+  @PostMapping("/challenge/start")
+  public ResponseEntity<Challenge> startChallenge() {
+    LOG.info("start challenge");
     return ResponseEntity.ok(gameService.getCurrentChallenge());
   }
 
-  @PostMapping("/challenge/{challengeId}/complete")
+  @PostMapping("/challenge/complete")
   @ResponseStatus(code = HttpStatus.OK)
-  public ResponseEntity<Void> completeChallenge(@PathVariable("challengeId") Long challengeId,
-      @RequestBody ChallengeResponse response) {
+  public ResponseEntity<GameMap> completeChallenge(@RequestBody ChallengeResponse response) {
+    LOG.info("complete challenge");
     gameService.completeChallenge(response);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(gameService.getMap());
   }
 
   @PostMapping("/location")
   @ResponseStatus(code = HttpStatus.OK)
   public ResponseEntity<GameMap> sendLocation(@RequestBody Coordinates coords) {
-    GameToken token = gameService.getToken();
-    if (token.getGameId() == null) {
-      return ResponseEntity.noContent().build();
-    }
+    LOG.info("send location");
     return ResponseEntity.ok(gameService.sendLocation(coords));
   }
 
   @RequestMapping(value = "/export", method = RequestMethod.GET, produces = "application/json")
   public String exportGame() {
+    LOG.info("export game");
     return GameSerializationUtil.serializeToJSON(gameService.getGame());
   }
 
   @PostMapping("/game/import")
   @ResponseStatus(code = HttpStatus.OK)
   public void importGame(@RequestBody String jsonGameData) {
+    LOG.info("import game");
     Game game = GameSerializationUtil.deserializeFromJSON(jsonGameData);
     gameService.addGame(game);
   }

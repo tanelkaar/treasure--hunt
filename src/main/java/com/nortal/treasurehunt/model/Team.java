@@ -90,7 +90,7 @@ public class Team {
   public Member getMember(String memberId) {
     Member member = members.stream().filter(m -> m.getId().equals(memberId)).findFirst().orElse(null);
     if (member == null) {
-      throw new TreasurehuntException(ErrorCode.INVALID_MEMBER);
+      throw new TreasurehuntException(ErrorCode.INVALID_TEAM_MEMBER);
     }
     return member;
   }

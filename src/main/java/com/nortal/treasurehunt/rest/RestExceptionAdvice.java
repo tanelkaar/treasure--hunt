@@ -2,6 +2,9 @@ package com.nortal.treasurehunt.rest;
 
 import com.nortal.treasurehunt.TreasurehuntException;
 import com.nortal.treasurehunt.enums.ErrorCode;
+import com.nortal.treasurehunt.service.GameTokenService;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -13,21 +16,27 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class RestExceptionAdvice extends ResponseEntityExceptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(RestExceptionAdvice.class);
+  @Resource
+  private GameTokenService tokenService;
 
   @ExceptionHandler(TreasurehuntException.class)
-  public ResponseEntity<Error> handle(TreasurehuntException e) {
+  public ResponseEntity<Error> handle(HttpServletResponse response, TreasurehuntException e) {
     LOG.error("Application error: ", e);
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Error(e.getCode().name(), e.getMessage()));
+    return handle(response, e.getCode(), e);
   }
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<Error> handle(Exception e) {
+  public ResponseEntity<Error> handle(HttpServletResponse response, Exception e) {
     LOG.error("Unexpected error: ", e);
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(new Error(ErrorCode.UNEXPECTED_ERROR.name(), e.getMessage()));
+    return handle(response, ErrorCode.UNEXPECTED_ERROR, e);
   }
 
-  private class Error {
+  private ResponseEntity<Error> handle(HttpServletResponse response, ErrorCode code, Exception e) {
+    tokenService.writeToken(response);
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Error(code.name(), e.getMessage()));
+  }
+
+  private static class Error {
     private String errorCode;
     private String description;
 
