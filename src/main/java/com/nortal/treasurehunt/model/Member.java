@@ -1,13 +1,9 @@
 package com.nortal.treasurehunt.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Member {
 
   private String id;
   private String name;
-  private final List<TrailLog> trail = new ArrayList<>();
 
   public String getId() {
     return id;
@@ -25,11 +21,4 @@ public class Member {
     this.name = name;
   }
 
-  public void logTrail(TrailLog trailLog) {
-    trail.add(trailLog);
-  }
-
-  public List<TrailLog> getTrail() {
-    return trail;
-  }
 }

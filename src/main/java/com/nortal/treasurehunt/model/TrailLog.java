@@ -1,21 +1,19 @@
 package com.nortal.treasurehunt.model;
 
-import java.util.Date;
-
 public class TrailLog {
   private final Coordinates coordinates;
-  private Date date;
+  private long timestamp;
 
   public TrailLog(Coordinates coordinates) {
     this.coordinates = coordinates;
-    this.date = new Date();
+    this.timestamp = System.currentTimeMillis();
   }
 
   public Coordinates getCoordinates() {
     return coordinates;
   }
 
-  public Date getDate() {
-    return date;
+  public long getTimeStamp() {
+    return timestamp;
   }
 }

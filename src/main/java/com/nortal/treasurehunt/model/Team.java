@@ -6,21 +6,17 @@ import com.nortal.treasurehunt.enums.ErrorCode;
 import com.nortal.treasurehunt.enums.TeamState;
 import com.nortal.treasurehunt.util.CoordinatesUtil;
 import com.nortal.treasurehunt.util.IDUtil;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Team {
   private static final Logger LOG = LoggerFactory.getLogger(Team.class);
-  private static final long LOG_UPDATE_INTERVAL = 15;
-  private static final long PRIMARY_MEMBER_TIMEOUT = 60;
-
+  private static final long PRIMARY_MEMBER_TIMEOUT = 60_000;
+  private static final long TRAIL_LOG_ACURACY = 10; // minimum difference
+                                                    // between two log entries
   private Long id;
   private final String name;
   private final List<Member> members = new ArrayList<>();
@@ -32,8 +28,9 @@ public class Team {
   private TeamState state = TeamState.STARTING;
   private final List<TrailLog> trail = new ArrayList<>();
   private TeamChallenge currentChallenge;
-  private final List<Challenge> uncompletedChallenges;
+  private final List<Challenge> uncompletedChallenges = new ArrayList<>();
   private final List<TeamChallenge> completedChallenges = new ArrayList<>();
+  private long lastPrimaryMemberUpdateTime = 0;
 
   public Team(String name, Coordinates start, Coordinates finish, List<Challenge> uncompletedChallenges) {
     this.id = IDUtil.getNext();
@@ -42,7 +39,7 @@ public class Team {
     this.finish = finish;
     this.startBoundaries = new Boundaries(start, Waypoint.WAYPOINT_RANGE);
     this.finishBoundaries = new Boundaries(finish, Waypoint.WAYPOINT_RANGE);
-    this.uncompletedChallenges = uncompletedChallenges;
+    this.uncompletedChallenges.addAll(uncompletedChallenges);
   }
 
   public Long getId() {
@@ -145,9 +142,10 @@ public class Team {
       break;
     case IN_PROGRESS:
       Challenge challenge = uncompletedChallenges.stream()
-      .filter(c -> CoordinatesUtil.intersects(c.getBoundaries(), coords))
-      .findFirst().orElse(null);
-      if(challenge != null) {
+          .filter(c -> CoordinatesUtil.intersects(c.getBoundaries(), coords))
+          .findFirst()
+          .orElse(null);
+      if (challenge != null) {
         startChallenge(challenge);
       }
       break;
@@ -163,38 +161,40 @@ public class Team {
   }
 
   private void addTrail(String memberId, Coordinates coords) {
-    Member member = getMember(memberId);
+    // works in the beginning (current - 0) and later as well
+    Long currentTime = System.currentTimeMillis();
+    if (currentTime - lastPrimaryMemberUpdateTime > PRIMARY_MEMBER_TIMEOUT) {
+      this.primaryMemberId = memberId;
+    }
 
+    // do not log coordinates of non-primary team-members
+    if (!this.primaryMemberId.equals(memberId)) {
+      return;
+    }
+
+    // primary member heartbeat
+    lastPrimaryMemberUpdateTime = currentTime;
+
+    // not much to do in the beginning of a game
     if (trail.isEmpty()) {
-      this.primaryMemberId = member.getId();
       updateTrailLog(coords);
       return;
     }
 
-    TrailLog lastLog = trail.get(trail.size() - 1);
-    Duration duration = Duration.between(LocalDateTime.ofInstant(lastLog.getDate().toInstant(), ZoneId.systemDefault()),
-        LocalDateTime.now());
-    if (CollectionUtils.isNotEmpty(trail)) {
-      if (duration.getSeconds() < LOG_UPDATE_INTERVAL) {
-        LOG.info("Skipping team {} trail log update - update interval is not passed", name);
-        return;
+    // check last log distance from current location, log only those that are
+    // far enough
+    synchronized (this) {
+      TrailLog lastLog = trail.get(trail.size() - 1);
+      if (CoordinatesUtil.distance(coords, lastLog.getCoordinates()) >= TRAIL_LOG_ACURACY) {
+        updateTrailLog(coords);
       }
     }
-
-    if (!StringUtils.equals(primaryMemberId, member.getId())) {
-      if (duration.getSeconds() <= PRIMARY_MEMBER_TIMEOUT) {
-        LOG.info("Skipping team {} trail log update - member {} is not valid to update log", name, member.getId());
-        return;
-      }
-      LOG.info("Replacing team {} primary member {} with {}", name, primaryMemberId, member.getId());
-      this.primaryMemberId = member.getId();
-    }
-    updateTrailLog(coords);
   }
 
   private void updateTrailLog(Coordinates coords) {
     LOG.info("Updated team {} trail by member {}", name, primaryMemberId);
     trail.add(new TrailLog(coords));
+    lastPrimaryMemberUpdateTime = System.currentTimeMillis();
   }
 
   public TrailLog getLatestLog() {
@@ -225,7 +225,8 @@ public class Team {
     } else {
       // return uncompleted and completed challenges
       uncompletedChallenges.forEach(c -> waypoints.add(new ChallengeWaypoint(c, ChallengeState.UNCOMPLETED)));
-      completedChallenges.forEach(c -> waypoints.add(new ChallengeWaypoint(c.getChallenge(), ChallengeState.COMPLETED)));
+      completedChallenges
+          .forEach(c -> waypoints.add(new ChallengeWaypoint(c.getChallenge(), ChallengeState.COMPLETED)));
     }
     return waypoints;
   }
