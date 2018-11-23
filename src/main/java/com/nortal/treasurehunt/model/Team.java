@@ -93,7 +93,7 @@ public class Team {
   public Member getMember(String memberId) {
     Member member = members.stream().filter(m -> m.getId().equals(memberId)).findFirst().orElse(null);
     if (member == null) {
-      throw new TreasurehuntException(ErrorCode.INVALID_MEMBER);
+      throw new TreasurehuntException(ErrorCode.INVALID_TEAM_MEMBER);
     }
     return member;
   }
@@ -145,9 +145,10 @@ public class Team {
       break;
     case IN_PROGRESS:
       Challenge challenge = uncompletedChallenges.stream()
-      .filter(c -> CoordinatesUtil.intersects(c.getBoundaries(), coords))
-      .findFirst().orElse(null);
-      if(challenge != null) {
+          .filter(c -> CoordinatesUtil.intersects(c.getBoundaries(), coords))
+          .findFirst()
+          .orElse(null);
+      if (challenge != null) {
         startChallenge(challenge);
       }
       break;
@@ -225,7 +226,8 @@ public class Team {
     } else {
       // return uncompleted and completed challenges
       uncompletedChallenges.forEach(c -> waypoints.add(new ChallengeWaypoint(c, ChallengeState.UNCOMPLETED)));
-      completedChallenges.forEach(c -> waypoints.add(new ChallengeWaypoint(c.getChallenge(), ChallengeState.COMPLETED)));
+      completedChallenges
+          .forEach(c -> waypoints.add(new ChallengeWaypoint(c.getChallenge(), ChallengeState.COMPLETED)));
     }
     return waypoints;
   }

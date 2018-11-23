@@ -1,8 +1,5 @@
 package com.nortal.treasurehunt.service;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.nortal.treasurehunt.TreasurehuntException;
 import com.nortal.treasurehunt.dto.GameDTO;
 import com.nortal.treasurehunt.dto.TeamDTO;
@@ -19,6 +16,7 @@ import com.nortal.treasurehunt.model.GameMap;
 import com.nortal.treasurehunt.model.GameToken;
 import com.nortal.treasurehunt.model.Member;
 import com.nortal.treasurehunt.model.Team;
+import com.nortal.treasurehunt.rest.GameTokenContext;
 import com.nortal.treasurehunt.util.CoordinatesUtil;
 import com.nortal.treasurehunt.util.IDUtil;
 import java.util.ArrayList;
@@ -36,20 +34,10 @@ import org.springframework.stereotype.Service;
 public class GameService {
   private static final Logger LOG = LoggerFactory.getLogger(GameService.class);
 
-  private static final Algorithm ALGORITHM = Algorithm.HMAC256("treasurehunt");
-
   private List<Game> games = new ArrayList<>();
   private List<Member> members = new ArrayList<>();
-  private ThreadLocal<GameToken> tokenStore = new ThreadLocal<>();
 
-  private boolean isValid(GameToken member) {
-    if (member == null || member.getMemberId() == null) {
-      return false;
-    }
-    return getMember(member.getMemberId()) != null;
-  }
-
-  private Member createMember() {
+  public Member createMember() {
     LOG.info("Creating new member - having {} members so far", members.size());
     Member member = new Member();
     member.setId(UUID.randomUUID().toString());
@@ -63,65 +51,8 @@ public class GameService {
     return members.stream().filter(m -> m.getId().equals(memberId)).findFirst().orElse(null);
   }
 
-  public void initToken(String tokenJwt) {
-    LOG.info("init token by jwt={}", tokenJwt);
-    GameToken token = readToken(tokenJwt);
-    if (token == null) {
-      token = new GameToken(createMember().getId());
-    }
-    this.tokenStore.set(token);
-  }
-
-  private GameToken readToken(String tokenJwt) {
-    if (StringUtils.isBlank(tokenJwt)) {
-      return null;
-    }
-
-    GameToken token = null;
-    try {
-      DecodedJWT jwt = JWT.require(ALGORITHM).build().verify(tokenJwt);
-      token = new GameToken(jwt.getClaim("memberId").asString(),
-          jwt.getClaim("gameId").asLong(),
-          jwt.getClaim("teamId").asLong());
-      if (!isValid(token)) {
-        LOG.info("invalid member by token={}", tokenJwt);
-        return null;
-      }
-    } catch (Exception e) {
-      LOG.error(String.format("Unable to verify token=%s", tokenJwt), e);
-    }
-    return token;
-  }
-
-  public GameToken getToken() {
-    return tokenStore.get();
-  }
-
-  public String getTokenJwt() {
-    GameToken token = prepareToken();
-    return JWT.create()
-        .withClaim("memberId", token.getMemberId())
-        .withClaim("gameId", token.getGameId())
-        .withClaim("teamId", token.getTeamId())
-        .sign(ALGORITHM);
-  }
-
-  private GameToken prepareToken() {
-    GameToken token = getToken();
-    if (token.getGameId() == null) {
-      return token;
-    }
-
-    Game game = getGame();
-    // token.setGameId(game.getId()); -- avoid for now to access main
-    Team team = game.getTeam(token.getTeamId());
-    // token.setTeamId(team.getId()); -- avoid for now to access main
-    return token;
-  }
-
-  public void logToken() {
-    GameToken token = getToken();
-    LOG.info("token memberId={}, gameId={}, teamId={}", token.getMemberId(), token.getGameId(), token.getTeamId());
+  private GameToken getToken() {
+    return GameTokenContext.get();
   }
 
   public List<GameDTO> getGames() {

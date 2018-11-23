@@ -1,14 +1,9 @@
 package com.nortal.treasurehunt.rest;
 
-import com.nortal.treasurehunt.service.GameService;
-import java.util.stream.Stream;
+import com.nortal.treasurehunt.service.GameTokenService;
 import javax.annotation.Resource;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -22,24 +17,13 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 @ControllerAdvice(assignableTypes = GameController.class)
 public class GameTokenAdvice extends HandlerInterceptorAdapter implements ResponseBodyAdvice<Object> {
-  private static final Logger LOG = LoggerFactory.getLogger(GameTokenAdvice.class);
-  public static final String GAME_TOKEN = "game-token";
-
   @Resource
-  private GameService gameService;
+  private GameTokenService tokenService;
 
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-    Cookie cookie = getTokenCookie(request);
-    gameService.initToken(cookie != null ? cookie.getValue() : null);
+    tokenService.readToken(request);
     return true;
-  }
-
-  private Cookie getTokenCookie(HttpServletRequest request) {
-    if (ArrayUtils.isEmpty(request.getCookies())) {
-      return null;
-    }
-    return Stream.of(request.getCookies()).filter(c -> c.getName().equals(GAME_TOKEN)).findFirst().orElse(null);
   }
 
   @Override
@@ -54,11 +38,7 @@ public class GameTokenAdvice extends HandlerInterceptorAdapter implements Respon
       Class<? extends HttpMessageConverter<?>> selectedConverterType,
       ServerHttpRequest request,
       ServerHttpResponse response) {
-
-    Cookie cookie = new Cookie(GAME_TOKEN, gameService.getTokenJwt());
-    cookie.setPath("/");
-    ((ServletServerHttpResponse) response).getServletResponse().addCookie(cookie);
-
+    tokenService.writeToken(((ServletServerHttpResponse) response).getServletResponse());
     return body;
   }
 }

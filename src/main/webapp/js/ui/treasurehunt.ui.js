@@ -39,6 +39,9 @@
       resolve: {
         register: (GameService) => {
           return GameService.register().then(() => {
+            if (GameService.hasGame()) {
+              GameService.startGame();
+            }
             return;
           });
         },
@@ -59,6 +62,7 @@
       },
       resolve: {
         map: (GameService) => {
+          console.log('map resolve');
           return GameService.getMap().then((map) => {
             return map;
           });
@@ -66,7 +70,7 @@
       }
     });
     $stateProvider.state('challenge', {
-      url: '/challenge/{id}',
+      url: '/challenge',
       views: {
         '': {
           templateUrl: '/challenge.html',
@@ -74,11 +78,19 @@
         }
       },
       resolve: {
-        challenge: ($stateParams, GameService) => {
-          console.log('challenge resolve');
-          return GameService.startChallenge($stateParams.id).then((rsp) => {
+        challenge: (GameService) => {
+          return GameService.startChallenge().then((rsp) => {
             return rsp.data;
           });
+        }
+      }
+    });
+    $stateProvider.state('reset', {
+      url: '/reset',
+      resolve: {
+        reset: ($cookies, $state) => {
+          $cookies.remove('game-token');
+          $state.go('main');
         }
       }
     });
@@ -88,22 +100,19 @@
   function run($rootScope, $state, GameService) {
     $rootScope.$on('$stateChangeStart', (event, toState, toParams, fromState, fromParams, options) => {
       if (_.contains(['main', 'map', 'challenge'], toState.name)) {
-        console.log('change state: ', toState.name);
-        if (toState.name != 'main' && !GameService.isMember()) {
+        console.log('change state: ', toState.name, GameService.hasGame(), GameService.hasChallenge());
+        if (toState.name === 'main' && GameService.hasGame()) {
           event.preventDefault();
-          $state.go('main', { reload: fromState.name === 'main' });
+          $state.go('map');
           return;
-        /*} else if (toState.name != 'challenge' && GameService.hasChallenge()) {
+        } else if (toState.name === 'map' && !GameService.hasGame()) {
           event.preventDefault();
-          //$state.go('challenge', { id: MemberService.getChallengeId() }, { reload: fromState.name === 'challenge' });
+          $state.go('main');
           return;
-        } else if (toState.name != 'map' && GameService.hasGame() && !GameService.hasChallenge()) {
+        } else if (toState.name === 'challenge' && !GameService.hasChallenge()) {
           event.preventDefault();
-          //$state.go('map', { reload: fromState.name === 'map' });
+          $state.go('map');
           return;
-        //} else if (fromState.name === toState.name) {
-        //  event.preventDefault();
-        //  return;*/
         }
       }
     });

@@ -88,6 +88,6 @@ public class GameAuthFilter extends AbstractAuthenticationProcessingFilter {
 
     chain.doFilter(request, response);
 
-    gameService.logToken();
+    // gameService.logToken();
   }
 }

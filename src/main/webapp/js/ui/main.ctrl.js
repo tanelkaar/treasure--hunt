@@ -5,7 +5,7 @@
     .module('treasurehunt.ui')
     .controller('MainCtrl', MainCtrl);
 
-  function MainCtrl(games, GameService) {
+  function MainCtrl($state, games, GameService) {
     let ctrl = {
       game: null,
       team: null,
@@ -41,6 +41,8 @@
       GameService.addGame(name).then((rsp) => {
         ctrl.gameName = null;
         ctrl.games.push(rsp.data);
+      }, () => {
+        $state.reload()
       });
     }
 
@@ -48,6 +50,8 @@
       GameService.addTeam(ctrl.game.id, name).then((rsp) => {
         ctrl.teamName = null;
         ctrl.game.teams.push(rsp.data);
+      }, () => {
+        $state.reload()
       });
     }
 
