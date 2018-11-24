@@ -6,6 +6,7 @@ import java.util.List;
 public class ChallengeResponse {
   private String value;
   private List<Long> options = new ArrayList<>();
+  private String image;
 
   public String getValue() {
     return value;
@@ -21,5 +22,13 @@ public class ChallengeResponse {
 
   public void setOptions(List<Long> options) {
     this.options = options;
+  }
+
+  public void setImage(String image) {
+    this.image = image;
+  }
+
+  public String getImage() {
+    return image;
   }
 }

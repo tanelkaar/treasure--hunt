@@ -36,14 +36,8 @@ public class GameTokenService {
     LOG.warn("invalid token was provided");
     logToken(token);
 
-    if (isValidMember(token)) {
-      token.setGameId(null);
-      token.setTeamId(null);
-      GameTokenContext.set(token);
-    } else {
-      GameTokenContext.set(null);
-    }
-    throw new TreasurehuntException(ErrorCode.UNAUTHORIZED);
+    GameTokenContext.set(getValid(token));
+    throw new TreasurehuntException(ErrorCode.INVALID_TOKEN);
   }
 
   public void writeToken(HttpServletResponse response) {
@@ -102,12 +96,24 @@ public class GameTokenService {
     return token != null && gameService.getMember(token.getMemberId()) != null;
   }
 
+  private GameToken getValid(GameToken token) {
+    if (isValid(token)) {
+      return token;
+    }
+    if (isValidMember(token)) {
+      token.setGameId(null);
+      token.setTeamId(null);
+      return token;
+    }
+    return null;
+  }
+
   public GameToken getToken() {
     return GameTokenContext.get();
   }
 
   private String getTokenJwt() {
-    GameToken token = getToken();
+    GameToken token = getValid(getToken());
     if (token == null) {
       return null;
     }

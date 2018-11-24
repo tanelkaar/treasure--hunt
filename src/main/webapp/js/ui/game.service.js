@@ -173,7 +173,7 @@
 
     function completeChallenge(response) {
       $http.post('/api/game/challenge/complete', response).then((rsp) => {
-        MessageService.showInfo({ text: MESSAGE_CODES.CHALLENGE_SUCCESSFULLY_COMPLETED });
+        MessageService.showInfo({ text: MESSAGE_CODES.CHALLENGE_COMPLETED });
         refreshMap(rsp);
       }, handleError);
     }
@@ -200,7 +200,7 @@
     }
 
     function sendLocation(pos) {
-      if (!hasGame()) { // for testing
+      if (!hasGame()) {
         return;
       }
       $http.post('/api/game/location', pos).then(refreshMap, handleError);
@@ -214,13 +214,12 @@
       _map = rsp.data;
       _mapDefer.resolve(_map);
       $rootScope.$emit('mapRefresh', _map);
-
+      
       if (_map.state === TEAM_STATE.COMPLETED) {
         MessageService.showInfo({ text: MESSAGE_CODES.GAME_OVER });
         exit();
         return;
       }
-
       if (hasChallenge()) {
         $state.go('challenge');
         return;

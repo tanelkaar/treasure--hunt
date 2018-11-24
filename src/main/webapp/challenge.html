@@ -44,7 +44,21 @@
           </div>
         </div>
         <div class="form-group" data-ng-if="ctrl.challenge.answerType === 'IMAGE'">
-          implement meh!
+          <div class="input-group">
+            <div class="custom-file">
+              <input
+                id="image"
+                type="file"
+                class="custom-file-input"
+                accept="image/*"
+                capture
+                required="true"
+                ng-model="ctrl.response.image"
+                file-read
+                file-name="ctrl.fileName" />
+              <label class="custom-file-label" for="image">{{ ctrl.fileName ? ctrl.fileName : 'Lisa pilt' }}</label>
+            </div>
+          </div>
         </div>
         <div class="text-center">
           <button type="button" data-ng-click="ctrl.complete(ctrl.response)" class="btn center" data-ng-disabled="form.$invalid">Vasta</button>

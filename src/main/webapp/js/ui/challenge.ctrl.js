@@ -4,11 +4,36 @@
   angular
     .module('treasurehunt.ui')
     .filter('trustUrl', trustUrlFilter)
+    .directive('fileRead', fileRead)
     .controller('ChallengeCtrl', ChallengeCtrl);
 
   function trustUrlFilter($sce) {
     return (url) => {
       return $sce.trustAsResourceUrl(url)
+    }
+  }
+
+  function fileRead() {
+    let dir = {
+      restrict: 'A',
+      scope: {
+        fileName: '='
+      },
+      require: 'ngModel',
+      link: link
+    }
+    return dir;
+
+    function link(scope, elem, attrs, ngModel) {
+      elem.on('change', (event) => {
+        let reader = new FileReader();
+        reader.onload = (loadEvent) => {
+          ngModel.$setViewValue(loadEvent.target.result);
+        }
+        let file = event.target.files[0];
+        scope.fileName = file.name;
+        reader.readAsDataURL(file);
+      });
     }
   }
 
@@ -77,7 +102,6 @@
           return opt.id;
         });
       }
-      console.log('ANSWER: ', ctrl.response);
       GameService.completeChallenge(ctrl.response);
     }
   }

@@ -12,9 +12,8 @@
       'TEAM_EXISTS': 'Sellise nimega meeskond on juba olemas!',
       'INVALID_MEMBER': 'Ebakorretne mängu osaline!',
       'INVALID_CHALLENGE': 'Selline ülesanne puudub!',
-      'CHALLENGE_COMPLETED': 'Ülesanne on juba lahendatud!',
-      'GAME_OVER': 'Meeskond on mängu lõpetanud!',
-      'CHALLENGE_SUCCESSFULLY_COMPLETED': 'Ülesanne edukalt sooritatud!'
+      'CHALLENGE_COMPLETED': 'Ülesanne on lahendatud!',
+      'GAME_OVER': 'Meeskond on mängu lõpetanud!'
     })
     .factory('MessageService', MessageService)
     .factory('errorInterceptor', errorInterceptor)
