@@ -243,4 +243,9 @@ public class GameService {
     viewDTO.setTeams(getGame().getTeams().stream().map(t -> t.getTeamDTO(true)).collect(Collectors.toList()));
     return viewDTO;
   }
+
+  public void clear() {
+    games = new ArrayList<>();
+    members = new ArrayList<>();
+  }
 }

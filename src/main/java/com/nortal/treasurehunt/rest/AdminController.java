@@ -44,4 +44,10 @@ public class AdminController {
     return ResponseEntity.ok(gameService.getAdminView());
   }
 
+  @PostMapping("/clear")
+  @ResponseStatus(code = HttpStatus.OK)
+  public void clear() {
+    LOG.info("clear game");
+    gameService.clear();
+  }
 }
