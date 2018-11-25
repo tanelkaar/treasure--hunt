@@ -22,10 +22,6 @@ public class GameTokenAdvice extends HandlerInterceptorAdapter implements Respon
 
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-    // TODO add separate authorization scheme
-    if(request.getRequestURI().equals("/api/game/import")) {
-      return true;
-    }
     tokenService.readToken(request);
     return true;
   }

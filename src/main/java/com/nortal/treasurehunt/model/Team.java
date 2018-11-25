@@ -1,6 +1,7 @@
 package com.nortal.treasurehunt.model;
 
 import com.nortal.treasurehunt.TreasurehuntException;
+import com.nortal.treasurehunt.dto.TeamDTO;
 import com.nortal.treasurehunt.enums.ChallengeState;
 import com.nortal.treasurehunt.enums.ErrorCode;
 import com.nortal.treasurehunt.enums.TeamState;
@@ -8,6 +9,7 @@ import com.nortal.treasurehunt.util.CoordinatesUtil;
 import com.nortal.treasurehunt.util.IDUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,7 +131,7 @@ public class Team {
     completedChallenges.add(currentChallenge);
 
     // make depending challenge visible
-    if(currentChallenge.getChallenge().getDependingChallenge() != null) {
+    if (currentChallenge.getChallenge().getDependingChallenge() != null) {
       uncompletedChallenges.add(currentChallenge.getChallenge().getDependingChallenge());
     }
 
@@ -248,5 +250,15 @@ public class Team {
   public Coordinates getCurrentLocation() {
     TrailLog log = getLatestLog();
     return log != null ? log.getCoordinates() : null;
+  }
+
+  public TeamDTO getTeamDTO(boolean includeTrail) {
+    TeamDTO teamDTO = new TeamDTO();
+    teamDTO.setId(getId());
+    teamDTO.setName(getName());
+    if(includeTrail) {
+      teamDTO.setTrail(getTrail().stream().map(t -> t.getCoordinates()).collect(Collectors.toList()));
+    }
+    return teamDTO;
   }
 }

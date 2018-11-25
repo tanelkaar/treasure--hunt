@@ -1,6 +1,7 @@
 package com.nortal.treasurehunt.service;
 
 import com.nortal.treasurehunt.TreasurehuntException;
+import com.nortal.treasurehunt.dto.AdminViewDTO;
 import com.nortal.treasurehunt.dto.GameDTO;
 import com.nortal.treasurehunt.dto.TeamDTO;
 import com.nortal.treasurehunt.enums.ChallengeAnswerType;
@@ -15,7 +16,6 @@ import com.nortal.treasurehunt.model.GameConfig;
 import com.nortal.treasurehunt.model.GameMap;
 import com.nortal.treasurehunt.model.GameToken;
 import com.nortal.treasurehunt.model.Member;
-import com.nortal.treasurehunt.model.Team;
 import com.nortal.treasurehunt.rest.GameTokenContext;
 import com.nortal.treasurehunt.util.CoordinatesUtil;
 import com.nortal.treasurehunt.util.IDUtil;
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -84,16 +85,9 @@ public class GameService {
 
     List<TeamDTO> teams = new ArrayList<>();
     game.getTeams().forEach(t -> {
-      teams.add(convert(t));
+      teams.add(t.getTeamDTO(false));
     });
     result.setTeams(teams);
-    return result;
-
-  }
-
-  private TeamDTO convert(Team team) {
-    TeamDTO result = new TeamDTO();
-    BeanUtils.copyProperties(team, result);
     return result;
   }
 
@@ -236,8 +230,10 @@ public class GameService {
     tempChallenges.add(c);
   }
 
-  public void replace(Game existing, Game game) {
-    // TODO Auto-generated method stub
-
+  public AdminViewDTO getAdminView() {
+    AdminViewDTO viewDTO = new AdminViewDTO();
+    viewDTO.setChallenges(getGame().getChallenges().stream().map(c -> c.getCoordinates()).collect(Collectors.toList()));
+    viewDTO.setTeams(getGame().getTeams().stream().map(t -> t.getTeamDTO(true)).collect(Collectors.toList()));
+    return viewDTO;
   }
 }
