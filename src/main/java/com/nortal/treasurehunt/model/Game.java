@@ -16,7 +16,7 @@ public class Game {
   private final String name;
   private final Coordinates startFinish;
   private final List<Challenge> challenges;
-  private final List<Team> teams = new ArrayList<>();
+  private List<Team> teams = new ArrayList<>();
   private GameState state = GameState.RUNNING;
 
   public Game(String name, Coordinates startFinish, List<Challenge> challenges) {
@@ -43,6 +43,9 @@ public class Game {
   }
 
   public List<Team> getTeams() {
+    if(teams == null) {
+      teams = new ArrayList<>();
+    }
     return teams;
   }
 
