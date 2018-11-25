@@ -232,7 +232,14 @@ public class GameService {
 
   public AdminViewDTO getAdminView() {
     AdminViewDTO viewDTO = new AdminViewDTO();
-    viewDTO.setChallenges(getGame().getChallenges().stream().map(c -> c.getCoordinates()).collect(Collectors.toList()));
+    List<Coordinates> challenges = new ArrayList<>();
+    for(Challenge c: getGame().getChallenges()) {
+      challenges.add(c.getCoordinates());
+      if(c.getDependingChallenge() != null) {
+        challenges.add(c.getDependingChallenge().getCoordinates());
+      }
+    }
+    viewDTO.setChallenges(challenges);
     viewDTO.setTeams(getGame().getTeams().stream().map(t -> t.getTeamDTO(true)).collect(Collectors.toList()));
     return viewDTO;
   }
