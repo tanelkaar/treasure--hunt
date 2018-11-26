@@ -85,6 +85,22 @@
         }
       }
     });
+    $stateProvider.state('summary', {
+      url: '/summary',
+      views: {
+        '': {
+          templateUrl: '/summary.html',
+          controller: 'SummaryCtrl as ctrl'
+        }
+      },
+      resolve: {
+        game: (AdminService) => {
+          return AdminService.getGame().then((game) => {
+            return game;
+          });
+        }
+      }
+    });
     $stateProvider.state('reset', {
       url: '/reset',
       resolve: {

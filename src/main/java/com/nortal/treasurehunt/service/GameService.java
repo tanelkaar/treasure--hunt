@@ -72,6 +72,13 @@ public class GameService {
     return game;
   }
 
+  public Game getFirstGame() {
+    if (CollectionUtils.isEmpty(games)) {
+      return null;
+    }
+    return games.get(0);
+  }
+
   public Game getGame() {
     GameToken token = getToken();
     Game game = getGame(token.getGameId());
@@ -107,7 +114,7 @@ public class GameService {
       List<Challenge> challenges = CollectionUtils.isNotEmpty(config.getChallenges()) ? config.getChallenges()
           : generateChallenges(config.getStart());
       game = new Game(config.getName(), config.getStart(), challenges);
-      for(int i = 0; i < 10; i++) {
+      for (int i = 0; i < 10; i++) {
         game.getStartingPoints().add(CoordinatesUtil.randomize(game.getStartFinish()));
       }
       this.games.add(game);
@@ -234,16 +241,20 @@ public class GameService {
   }
 
   public AdminViewDTO getAdminView() {
+    if (!CollectionUtils.isNotEmpty(games)) {
+      return null;
+    }
     AdminViewDTO viewDTO = new AdminViewDTO();
     List<Coordinates> challenges = new ArrayList<>();
-    for(Challenge c: getGame().getChallenges()) {
+    Game game = games.get(0);
+    for (Challenge c : game.getChallenges()) {
       challenges.add(c.getCoordinates());
-      if(c.getDependingChallenge() != null) {
+      if (c.getDependingChallenge() != null) {
         challenges.add(c.getDependingChallenge().getCoordinates());
       }
     }
     viewDTO.setChallenges(challenges);
-    viewDTO.setTeams(getGame().getTeams().stream().map(t -> t.getTeamDTO(true)).collect(Collectors.toList()));
+    viewDTO.setTeams(game.getTeams().stream().map(t -> t.getTeamDTO(true)).collect(Collectors.toList()));
     return viewDTO;
   }
 

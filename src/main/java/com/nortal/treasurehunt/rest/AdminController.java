@@ -27,7 +27,7 @@ public class AdminController {
   @RequestMapping(value = "/export", method = RequestMethod.GET, produces = "application/json")
   public String exportGame() {
     LOG.info("export game");
-    return GameSerializationUtil.serializeToJSON(gameService.getGame());
+    return GameSerializationUtil.serializeToJSON(gameService.getFirstGame());
   }
 
   @PostMapping("/import")

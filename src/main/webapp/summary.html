@@ -1,0 +1,37 @@
+<div class="container-fluid">
+  <div class="row" data-ng-if="!ctrl.team" data-ng-repeat="team in ctrl.game.teams">
+    <div class="col">
+      <a href="" data-ng-click="ctrl.team = team">{{team.name}}</a>
+    </div>
+  </div>
+  <div data-ng-id="!ctrl.team" data-ng-repeat="item in ctrl.team.completedChallenges">
+    <div class="row">
+      <div class="col">
+        <div class="alert alert-success" data-ng-if="item.challenge.text">
+          {{item.challenge.text}}
+          <a href="{{item.challenge.url | trustUrl}}" target="_blank" data-ng-if="item.challenge.url">Link</a>
+        </div>
+        <img class="img-thumbnail mb-3" data-ng-if="item.challenge.image" data-ng-src="{{item.challenge.image | trustUrl}}" />
+        <div class="embed-responsive embed-responsive-16by9 mb-3" data-ng-if="item.challenge.video">
+          <iframe class="embed-responsive-item" data-ng-src="{{item.challenge.video | trustUrl}}" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <p class="card-text" data-ng-if="item.challengeResponse.value">{{item.challengeResponse.value}}</p>
+            <a href="{{item.challengeResponse.image}}" target="_blank" data-ng-if="item.challengeResponse.image">Pilt</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="score" class="col-md-1 col-form-label">Punktid:</label>
+      <div class="col-md-1">
+        <input type="text" class="form-control" id="score" data-ng-model="item.challengeResponse.score">
+      </div>
+    </div>
+  </div>
+</div>

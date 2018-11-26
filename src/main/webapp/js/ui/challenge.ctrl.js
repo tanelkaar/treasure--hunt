@@ -101,12 +101,16 @@
         });
       }
 
+      let defer = $q.defer();
       if (ctrl.image) {
         imgur.setAPIKey('Bearer 72517f3b6ab122a8549bd46a09b404dcbf17d9df');
-        return imgur.upload(ctrl.image);
+        imgur.upload(ctrl.image).then((image) => {
+          ctrl.response.image = image.link;
+          defer.resolve();
+        });
+      } else {
+        defer.resolve();
       }
-      let defer = $q.defer();
-      defer.resolve();
       return defer.promise;
     }
   }
