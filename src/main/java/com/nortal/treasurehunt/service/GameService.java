@@ -107,6 +107,9 @@ public class GameService {
       List<Challenge> challenges = CollectionUtils.isNotEmpty(config.getChallenges()) ? config.getChallenges()
           : generateChallenges(config.getStart());
       game = new Game(config.getName(), config.getStart(), challenges);
+      for(int i = 0; i < 10; i++) {
+        game.getStartingPoints().add(CoordinatesUtil.randomize(game.getStartFinish()));
+      }
       this.games.add(game);
     }
     return convert(game);

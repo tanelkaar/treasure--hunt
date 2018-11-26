@@ -4,7 +4,6 @@ import com.nortal.treasurehunt.TreasurehuntException;
 import com.nortal.treasurehunt.dto.TeamDTO;
 import com.nortal.treasurehunt.enums.ErrorCode;
 import com.nortal.treasurehunt.enums.GameState;
-import com.nortal.treasurehunt.util.CoordinatesUtil;
 import com.nortal.treasurehunt.util.IDUtil;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +17,7 @@ public class Game {
   private final List<Challenge> challenges;
   private List<Team> teams = new ArrayList<>();
   private GameState state = GameState.RUNNING;
+  private List<Coordinates> startingPoints = new ArrayList<>();
 
   public Game(String name, Coordinates startFinish, List<Challenge> challenges) {
     this.id = IDUtil.getNext();
@@ -59,8 +59,10 @@ public class Game {
       if (team != null) {
         throw new TreasurehuntException(ErrorCode.TEAM_EXISTS);
       }
+      Coordinates start = startingPoints.isEmpty() ? startFinish : startingPoints.get(0);
+      startingPoints.remove(0);
       teams.add(team =
-          new Team(dto.getName(), CoordinatesUtil.randomize(startFinish), CoordinatesUtil.randomize(startFinish), getChallenges()));
+          new Team(dto.getName(), start, startFinish, getChallenges()));
       dto.setId(team.getId());
     }
     return dto;
@@ -80,6 +82,10 @@ public class Game {
 
   public boolean isRunning() {
     return GameState.RUNNING.equals(state);
+  }
+
+  public List<Coordinates> getStartingPoints() {
+    return startingPoints;
   }
 
   // public Game validate(GameAuthData authData) {
