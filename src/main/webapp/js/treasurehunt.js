@@ -8,6 +8,7 @@
             'angular-jwt',
             'ngToast',
             'ngMap',
+            'ngImgur',
             'treasurehunt.ui'
         ]);
 })();

@@ -53,10 +53,9 @@
                 accept="image/*"
                 capture
                 required="true"
-                ng-model="ctrl.response.image"
-                file-read
-                file-name="ctrl.fileName" />
-              <label class="custom-file-label" for="image">{{ ctrl.fileName ? ctrl.fileName : 'Lisa pilt' }}</label>
+                ng-model="ctrl.image"
+                file-read />
+              <label class="custom-file-label" for="image">{{ ctrl.image.name ? ctrl.image.name : 'Lisa pilt' }}</label>
             </div>
           </div>
         </div>

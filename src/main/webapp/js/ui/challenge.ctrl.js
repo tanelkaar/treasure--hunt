@@ -16,9 +16,6 @@
   function fileRead() {
     let dir = {
       restrict: 'A',
-      scope: {
-        fileName: '='
-      },
       require: 'ngModel',
       link: link
     }
@@ -26,18 +23,13 @@
 
     function link(scope, elem, attrs, ngModel) {
       elem.on('change', (event) => {
-        let reader = new FileReader();
-        reader.onload = (loadEvent) => {
-          ngModel.$setViewValue(loadEvent.target.result);
-        }
         let file = event.target.files[0];
-        scope.fileName = file.name;
-        reader.readAsDataURL(file);
+        ngModel.$setViewValue(file);
       });
     }
   }
 
-  function ChallengeCtrl(challenge, $state, GameService, MessageService, CHALLENE_TYPE, ANSWER_TYPE) {
+  function ChallengeCtrl(challenge, $q, imgur, GameService, CHALLENE_TYPE, ANSWER_TYPE) {
     console.log('challenge ctrl');
     let ctrl = {
       response: {
@@ -95,6 +87,12 @@
     }
 
     function complete() {
+      prepare().then(() => {
+        GameService.completeChallenge(ctrl.response);
+      });
+    }
+
+    function prepare() {
       if (_.contains([ANSWER_TYPE.SINGLE_CHOICE, ANSWER_TYPE.MULTI_CHOICE], ctrl.challenge.answerType)) {
         ctrl.response.options = _.filter(ctrl.challenge.options, (opt) => {
           return opt.selected;
@@ -102,7 +100,14 @@
           return opt.id;
         });
       }
-      GameService.completeChallenge(ctrl.response);
+
+      if (ctrl.image) {
+        imgur.setAPIKey('Bearer 72517f3b6ab122a8549bd46a09b404dcbf17d9df');
+        return imgur.upload(ctrl.image);
+      }
+      let defer = $q.defer();
+      defer.resolve();
+      return defer.promise;
     }
   }
 })();
