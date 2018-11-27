@@ -1,5 +1,6 @@
 package com.nortal.treasurehunt.dto;
 
+import com.nortal.treasurehunt.enums.GameState;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,7 @@ public class GameDTO {
   private Long id;
   private String name;
   private List<TeamDTO> teams = new ArrayList<>();
+  private GameState state;
 
   public Long getId() {
     return id;
@@ -32,4 +34,11 @@ public class GameDTO {
     this.teams = teams;
   }
 
+  public GameState getState() {
+    return state;
+  }
+
+  public void setState(GameState state) {
+    this.state = state;
+  }
 }

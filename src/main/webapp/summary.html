@@ -5,16 +5,14 @@
         <tr>
           <th>Mängud</th>
           <th>Meeskondi</th>
-          <th>Mängijaid</th>
           <th>Staatus</th>
         </tr>
       </thead>
       <tbody>
         <tr data-ng-repeat="game in ctrl.games">
           <td><a href="" data-ng-click="ctrl.loadGame(game.id)">{{game.name}}</a></td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td>{{game.teams.length}}</td>
+          <td>{{game.state}}</td>
         </tr>
       </tbody>
     </table>
@@ -24,53 +22,139 @@
       <thead>
         <tr>
           <th>Meeskond</th>
+          <th>Ülesanded</th>
+          <th>Aeg</th>
+          <th>Staatus</th>
           <th>Punktid</th>
         </tr>
       </thead>
       <tbody>
         <tr data-ng-repeat="team in ctrl.game.teams">
-          <td><a href="" data-ng-click="ctrl.team = team">{{team.name}}</a></td>
-          <td></td>
+          <td>
+            <a href="" data-ng-click="ctrl.selectTeam(team)">{{team.name}}</a>
+          </td>
+          <td>{{ctrl.game.challenges.length + '/' + team.completedChallenges.length}}</td>
+          <td>{{team.time}}</td>
+          <td>{{team.state}}</td>
+          <td>
+            <div data-ng-if="ctrl.showScore">{{ctrl.getScore(team)}}</div>
+          </td>
         </tr>
       </tbody>
     </table>
-    <div class="text-right">
-      <button type="button" data-ng-click="ctrl.game = null" class="btn center">Tagasi</button>
-      <button type="button" data-ng-click="ctrl.saveScore()" class="btn center">Salvesta</button>
+    <hr>
+    <div class="form-row">
+      <div class="col">
+        <div class="form-check">
+          <input id="showScore" type="checkbox" class="form-check-input" data-ng-model="ctrl.showScore">
+          <label class="form-check-label" for="showScore">Näita tulemust</label>
+        </div>
+      </div>
+      <div class="col text-right">
+        <button type="button" data-ng-click="ctrl.game = null" class="btn center">Tagasi</button>
+        <button type="button" data-ng-click="ctrl.saveScore()" class="btn btn-primary">Salvesta</button>
+      </div>
     </div>
   </div>
-  <form data-ng-if="ctrl.team" novalidate>
-    <div data-ng-repeat="item in ctrl.team.completedChallenges">
-      <div class="row">
-        <div class="col">
-          <div class="alert alert-success" data-ng-if="item.challenge.text">
-            <p>{{item.challenge.text}}</p>
-            <a href="{{item.challenge.url | trustUrl}}" target="_blank" data-ng-if="item.challenge.url">Link</a>
-            <a href="{{item.challenge.video | trustUrl}}" target="_blank" data-ng-if="item.challenge.video">Video</a>
-            <a href="{{item.challenge.image | trustUrl}}" target="_blank" data-ng-if="item.challenge.image">Pilt</a>
+  <div data-ng-if="ctrl.team">
+    <ul class="nav nav-tabs" style="margin-bottom: 15px">
+      <li class="nav-item">
+        <a href="" class="nav-link" data-ng-class="{'active': ctrl.nav === 'RESPONSES'}" data-ng-click="ctrl.nav = 'RESPONSES'">Vastused</a>
+      </li>
+      <li class="nav-item">
+        <a href="" class="nav-link" data-ng-class="{'active': ctrl.nav === 'MAP'}" data-ng-click="ctrl.nav = 'MAP'">Kaart</a>
+      </li>
+    </ul>
+
+    <!-- KAART -->
+    <div data-ng-if="ctrl.nav === 'MAP'">
+      <div class="card" style="margin-bottom: 15px">
+        <div class="card-body">
+          <div map-lazy-load="https://maps.google.com/maps/api/js" map-lazy-load-params="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGEtCoDKLLD83seTo6KaXv5T31giUwHDo">
+            <ng-map zoom="15">
+              <marker data-ng-if="ctrl.team.start" position="[{{ctrl.team.start.lat}}, {{ctrl.team.start.lng}}]" centered="true"
+                icon="img/yellow_pin_with_qm.png">
+              </marker>
+              <marker data-ng-if="ctrl.team.finish" position="[{{ctrl.team.finish.lat}}, {{ctrl.team.finish.lng}}]" icon="img/yellow_pin_with_qm.png">
+              </marker>
+              <marker data-ng-repeat="challenge in ctrl.team.uncompletedChallenges" position="[{{challenge.coordinates.lat}}, {{challenge.coordinates.lng}}]"
+                icon="img/yellow_pin_with_qm.png">
+              </marker>
+              <marker data-ng-repeat="item in ctrl.team.completedChallenges" position="[{{item.challenge.coordinates.lat}}, {{item.challenge.coordinates.lng}}]"
+                icon="img/blue_pin_with_x.png">
+              </marker>
+              <shape name="polyline" path="{{ctrl.trail}}" geodesic="true" stroke-color="#FF0000" stroke-opacity="1.0"
+                stroke-weight="1">
+              </shape>
+            </ng-map>
           </div>
         </div>
       </div>
-      <div class="row" style="margin-bottom: 15px">
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <p class="card-text" data-ng-if="item.challengeResponse.value">{{item.challengeResponse.value}}</p>
-              <a href="{{item.challengeResponse.image}}" target="_blank" data-ng-if="item.challengeResponse.image">Pilt</a>
-            </div>
-          </div>
+      <div class="form-row" style="margin-bottom: 15px" data-ng-if="ctrl.team.trail">
+        <div class="col-md-1 text-center">
+          {{ctrl.trailTime}}
         </div>
-      </div>
-      <div class="form-group row">
-        <div class="col-md-11"></div>
-        <div class="col-md-1">
-          <input id="{{item.challenge.id}}" type="number" class="form-control" data-ng-model="item.challengeResponse.score" placeholder="Punktid" min="0" step="0.5" required="true">
+        <div class="col-md-10">
+          <input 
+            type="range"
+            class="form-control-range"
+            min="0"
+            max="{{ctrl.team.trail.length - 1}}"
+            data-ng-model="ctrl.trailIdx"
+            data-ng-change="ctrl.changeRange()"
+            data-ng-disabled="ctrl.drawingTrail">
+        </div>
+        <div class="col-md-1 text-center">
+          <button type="button" class="btn" data-ng-click="ctrl.drawTrail()" data-ng-disabled="ctrl.drawingTrail">
+            <i class="fas fa-play-circle"></i>
+          </button>
         </div>
       </div>
       <hr>
+      <div class="text-right">
+        <button type="button" data-ng-click="ctrl.team = null" class="btn" data-ng-disabled="form.$invalid">Tagasi</button>
+      </div>
     </div>
-    <div class="text-right">
-      <button type="button" data-ng-click="ctrl.team = null" class="btn center" data-ng-disabled="form.$invalid">Tagasi</button>
-    </div>
-  </form>
+
+    <!-- VASTUSED -->
+    <form data-ng-if="ctrl.nav === 'RESPONSES'" novalidate>
+      <div data-ng-repeat="item in ctrl.team.completedChallenges">
+        <div class="row">
+          <div class="col">
+            <div class="alert alert-success" data-ng-if="item.challenge.text">
+              <p>{{item.challenge.text}}</p>
+              <a href="{{item.challenge.url | trustUrl}}" target="_blank" data-ng-if="item.challenge.url">Link</a>
+              <a href="{{item.challenge.video | trustUrl}}" target="_blank" data-ng-if="item.challenge.video">Video</a>
+              <a href="{{item.challenge.image | trustUrl}}" target="_blank" data-ng-if="item.challenge.image">Pilt</a>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-bottom: 15px">
+          <div class="col">
+            <div class="card">
+              <div class="card-body">
+                <p class="card-text" data-ng-if="item.challenge.answerType === 'TEXT'">{{item.challengeResponse.value}}</p>
+                <a href="{{item.challengeResponse.image}}" target="_blank" data-ng-if="item.challenge.answerType === 'IMAGE'">Pilt</a>
+                <div class="form-check" data-ng-repeat="option in item.challenge.options" data-ng-if="item.challenge.answerType === 'SINGLE_CHOICE' || item.challenge.answerType === 'MULTI_CHOICE'">
+                  <input id="{{option.id}}" type="checkbox" class="form-check-input" disabled="true" data-ng-checked="ctrl.isOptionSelected(option.id, item.challengeResponse.options)">
+                  <label class="form-check-label" for="{{option.id}}">{{option.text}}</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="col-md-11"></div>
+          <div class="col-md-1">
+            <input id="{{item.challenge.id}}" type="number" class="form-control" data-ng-model="item.challengeResponse.score"
+              placeholder="Punktid" min="0" step="0.5" required="true">
+          </div>
+        </div>
+        <hr>
+      </div>
+      <div class="text-right">
+        <button type="button" data-ng-click="ctrl.team = null" class="btn center" data-ng-disabled="form.$invalid">Tagasi</button>
+      </div>
+    </form>
+  </div>
 </div>

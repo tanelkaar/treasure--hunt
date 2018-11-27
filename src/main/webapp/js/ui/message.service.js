@@ -14,7 +14,8 @@
       'INVALID_CHALLENGE': 'Selline ülesanne puudub!',
       'CHALLENGE_COMPLETED': 'Ülesanne on lahendatud!',
       'GAME_OVER': 'Meeskond on mängu lõpetanud!',
-      'SCORE_SAVED': 'Punktid edukalt salvestatud!'
+      'SCORE_SAVED': 'Punktid edukalt salvestatud!',
+      'IMAGE_UPLOAD_FAILED': 'Pildi laadimine ebaõnnestus!'
     })
     .factory('MessageService', MessageService)
     .factory('errorInterceptor', errorInterceptor)
@@ -45,11 +46,16 @@
 
   function MessageService(ngToast, MESSAGE_CODES) {
     let service = {
+      clear: clear,
       showSuccess: showSuccess,
       showInfo: showInfo,
       showError: showError
     };
     return service;
+
+    function clear() {
+      ngToast.dismiss();
+    }
 
     function showSuccess(msg) {
       msg.class = 'success';
