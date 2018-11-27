@@ -21,17 +21,17 @@ public class Team {
                                                     // between two log entries
   private Long id;
   private final String name;
-  private final List<Member> members = new ArrayList<>();
+  private List<Member> members = new ArrayList<>();
   private final Coordinates start;
   private final Coordinates finish;
   private final Boundaries startBoundaries;
   private final Boundaries finishBoundaries;
   private String primaryMemberId;
   private TeamState state = TeamState.STARTING;
-  private final List<TrailLog> trail = new ArrayList<>();
+  private List<TrailLog> trail = new ArrayList<>();
   private TeamChallenge currentChallenge;
-  private final List<Challenge> uncompletedChallenges = new ArrayList<>();
-  private final List<TeamChallenge> completedChallenges = new ArrayList<>();
+  private List<Challenge> uncompletedChallenges = new ArrayList<>();
+  private List<TeamChallenge> completedChallenges = new ArrayList<>();
   private long lastPrimaryMemberUpdateTime = 0;
 
   public Team(String name, Coordinates start, Coordinates finish, List<Challenge> uncompletedChallenges) {
@@ -53,19 +53,18 @@ public class Team {
   }
 
   public List<Member> getMembers() {
+    if (members == null) {
+      this.members = new ArrayList<>();
+    }
     return members;
   }
 
   public void addMember(Member member) {
     synchronized (members) {
-      if (members.stream().anyMatch(
-
-          m -> m.getId().equals(member.getId())))
-
-      {
+      if (getMembers().stream().anyMatch(m -> m.getId().equals(member.getId()))) {
         return;
       }
-      this.members.add(member);
+      getMembers().add(member);
     }
   }
 
@@ -85,20 +84,38 @@ public class Team {
     this.state = state;
   }
 
-  public List<TrailLog> getTrail() {
+  private List<TrailLog> getTrail() {
+    if (trail == null) {
+      this.trail = new ArrayList<>();
+    }
     return trail;
   }
 
   public Member getMember(String memberId) {
-    Member member = members.stream().filter(m -> m.getId().equals(memberId)).findFirst().orElse(null);
+    Member member = getMembers().stream().filter(m -> m.getId().equals(memberId)).findFirst().orElse(null);
     if (member == null) {
       throw new TreasurehuntException(ErrorCode.INVALID_TEAM_MEMBER);
     }
     return member;
   }
 
+  private List<Challenge> getUncompletedChallenges() {
+    if (uncompletedChallenges == null) {
+      this.uncompletedChallenges = new ArrayList<>();
+    }
+    return uncompletedChallenges;
+  }
+
+  private List<TeamChallenge> getCompletedChallenges() {
+    if (completedChallenges == null) {
+      this.completedChallenges = new ArrayList<>();
+    }
+    return completedChallenges;
+  }
+
   public void startChallenge(Challenge challenge) {
     synchronized (this) {
+      List<Challenge> uncompletedChallenges = getUncompletedChallenges();
       if (!uncompletedChallenges.contains(challenge)
           || currentChallenge != null && currentChallenge.getChallenge().equals(challenge)) {
         throw new TreasurehuntException(ErrorCode.CHALLENGE_COMPLETED);
@@ -128,9 +145,10 @@ public class Team {
     currentChallenge.setEndTimestamp(System.currentTimeMillis());
     currentChallenge.setState(com.nortal.treasurehunt.model.TeamChallenge.ChallengeState.COMPLETED);
     currentChallenge.setChallengeResponse(response);
-    completedChallenges.add(currentChallenge);
+    getCompletedChallenges().add(currentChallenge);
 
     // make depending challenge visible
+    List<Challenge> uncompletedChallenges = getUncompletedChallenges();
     if (currentChallenge.getChallenge().getDependingChallenge() != null) {
       uncompletedChallenges.add(currentChallenge.getChallenge().getDependingChallenge());
     }
@@ -149,7 +167,7 @@ public class Team {
       }
       break;
     case IN_PROGRESS:
-      Challenge challenge = uncompletedChallenges.stream()
+      Challenge challenge = getUncompletedChallenges().stream()
           .filter(c -> CoordinatesUtil.intersects(c.getBoundaries(), coords))
           .findFirst()
           .orElse(null);
@@ -184,6 +202,7 @@ public class Team {
     lastPrimaryMemberUpdateTime = currentTime;
 
     // not much to do in the beginning of a game
+    List<TrailLog> trail = getTrail();
     if (trail.isEmpty()) {
       updateTrailLog(coords);
       return;
@@ -201,12 +220,13 @@ public class Team {
 
   private void updateTrailLog(Coordinates coords) {
     LOG.info("Updated team {} trail by member {}", name, primaryMemberId);
-    trail.add(new TrailLog(coords));
+    getTrail().add(new TrailLog(coords));
     lastPrimaryMemberUpdateTime = System.currentTimeMillis();
   }
 
   public TrailLog getLatestLog() {
     synchronized (trail) {
+      List<TrailLog> trail = getTrail();
       if (CollectionUtils.isNotEmpty(trail)) {
         return trail.get(trail.size() - 1);
       }
@@ -232,8 +252,8 @@ public class Team {
           state == TeamState.STARTING ? ChallengeState.UNCOMPLETED : ChallengeState.IN_PROGRESS));
     } else {
       // return uncompleted and completed challenges
-      uncompletedChallenges.forEach(c -> waypoints.add(new ChallengeWaypoint(c, ChallengeState.UNCOMPLETED)));
-      completedChallenges
+      getUncompletedChallenges().forEach(c -> waypoints.add(new ChallengeWaypoint(c, ChallengeState.UNCOMPLETED)));
+      getCompletedChallenges()
           .forEach(c -> waypoints.add(new ChallengeWaypoint(c.getChallenge(), ChallengeState.COMPLETED)));
     }
     return waypoints;
@@ -256,7 +276,7 @@ public class Team {
     TeamDTO teamDTO = new TeamDTO();
     teamDTO.setId(getId());
     teamDTO.setName(getName());
-    if(includeTrail) {
+    if (includeTrail) {
       teamDTO.setTrail(getTrail().stream().map(t -> t.getCoordinates()).collect(Collectors.toList()));
     }
     return teamDTO;

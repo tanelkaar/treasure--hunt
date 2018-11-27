@@ -7,6 +7,7 @@ import com.nortal.treasurehunt.enums.GameState;
 import com.nortal.treasurehunt.util.IDUtil;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class Game {
@@ -43,7 +44,7 @@ public class Game {
   }
 
   public List<Team> getTeams() {
-    if(teams == null) {
+    if (teams == null) {
       teams = new ArrayList<>();
     }
     return teams;
@@ -59,17 +60,15 @@ public class Game {
       if (team != null) {
         throw new TreasurehuntException(ErrorCode.TEAM_EXISTS);
       }
-      Coordinates start = startingPoints.isEmpty() ? startFinish : startingPoints.get(0);
-      startingPoints.remove(0);
-      teams.add(team =
-          new Team(dto.getName(), start, startFinish, getChallenges()));
+      Coordinates start = CollectionUtils.isNotEmpty(getStartingPoints()) ? getStartingPoints().remove(0) : startFinish;
+      getTeams().add(team = new Team(dto.getName(), start, startFinish, getChallenges()));
       dto.setId(team.getId());
     }
     return dto;
   }
 
   public Team getTeam(Long teamId) {
-    Team team = teams.stream().filter(t -> t.getId().equals(teamId)).findFirst().orElse(null);
+    Team team = getTeams().stream().filter(t -> t.getId().equals(teamId)).findFirst().orElse(null);
     if (team == null) {
       throw new TreasurehuntException(ErrorCode.INVALID_TEAM);
     }
@@ -85,6 +84,9 @@ public class Game {
   }
 
   public List<Coordinates> getStartingPoints() {
+    if (startingPoints == null) {
+      this.startingPoints = new ArrayList<>();
+    }
     return startingPoints;
   }
 
