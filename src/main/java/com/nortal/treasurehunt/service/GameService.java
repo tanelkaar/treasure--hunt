@@ -199,7 +199,7 @@ public class GameService {
 
     c = new Challenge();
     c.setType(ChallengeType.QUESTION);
-    c.setText("Kessee laulab köögis?");
+    c.setTexts(new ArrayList<>(Arrays.asList("Kessee laulab köögis?", "Kus kessee laulab?", "Mida kessee köögis teeb?")));
     c.setVideo("https://www.youtube.com/embed/FIH5gF1z4SY?rel=0");
     c.setOptions(Arrays.asList(new ChallengeOption(IDUtil.getNext(), "kukk"),
         new ChallengeOption(IDUtil.getNext(), "kana"),

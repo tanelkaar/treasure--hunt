@@ -7,8 +7,10 @@ import com.nortal.treasurehunt.enums.GameState;
 import com.nortal.treasurehunt.util.IDUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 
 public class Game {
 
@@ -61,10 +63,32 @@ public class Game {
         throw new TreasurehuntException(ErrorCode.TEAM_EXISTS);
       }
       Coordinates start = CollectionUtils.isNotEmpty(getStartingPoints()) ? getStartingPoints().remove(0) : startFinish;
-      getTeams().add(team = new Team(dto.getName(), start, startFinish, getChallenges()));
+      getTeams().add(team = new Team(dto.getName(), start, startFinish, getTeamChallenges()));
       dto.setId(team.getId());
     }
     return dto;
+  }
+
+  private List<Challenge> getTeamChallenges() {
+    return getChallenges().stream().map(c -> getTeamChallenge(c)).collect(Collectors.toList());
+  }
+
+  private static Challenge getTeamChallenge(Challenge c) {
+    if(CollectionUtils.isEmpty(c.getTexts())) {
+      return c;
+    }
+    // last option, set as default
+    if(c.getTexts().size() == 1) {
+      c.setText(c.getTexts().get(0));
+      c.setTexts(null);
+      return c;
+    }
+    Challenge c2 = new Challenge();
+    BeanUtils.copyProperties(c, c2);
+    c2.setText(c2.getTexts().get(0));
+    c2.setTexts(null);
+    c.getTexts().remove(0);
+    return c2;
   }
 
   public Team getTeam(Long teamId) {

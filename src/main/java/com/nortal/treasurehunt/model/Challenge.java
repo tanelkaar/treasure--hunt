@@ -9,6 +9,7 @@ public class Challenge {
   private Long id;
   private Coordinates coordinates;
   private String text;
+  private List<String> texts;
   private ChallengeType type;
   private ChallengeAnswerType answerType;
   private String image;
@@ -104,5 +105,13 @@ public class Challenge {
 
   public void setDependingChallenge(Challenge dependingChallenge) {
     this.dependingChallenge = dependingChallenge;
+  }
+
+  public List<String> getTexts() {
+    return texts;
+  }
+
+  public void setTexts(List<String> texts) {
+    this.texts = texts;
   }
 }
