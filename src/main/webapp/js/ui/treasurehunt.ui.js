@@ -49,7 +49,7 @@
           return GameService.getGames().then((rsp) => {
             return rsp.data;
           });
-        },
+        }
       }
     });
     $stateProvider.state('map', {
@@ -94,11 +94,11 @@
         }
       },
       resolve: {
-        game: (AdminService) => {
-          return AdminService.getGame().then((game) => {
-            return game;
+        games: (AdminService) => {
+          return AdminService.getGames().then((rsp) => {
+            return rsp.data;
           });
-        }
+        },
       }
     });
     $stateProvider.state('reset', {

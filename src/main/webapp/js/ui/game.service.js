@@ -195,7 +195,7 @@
       }
       _token = null;
       _tokenJwt = null;
-      //$cookies.remove('game-token');
+      $cookies.remove('game-token');
       $state.go('main');
     }
 

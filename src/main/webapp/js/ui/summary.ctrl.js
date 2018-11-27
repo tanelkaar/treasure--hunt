@@ -5,16 +5,26 @@
     .module('treasurehunt.ui')
     .controller('SummaryCtrl', SummaryCtrl);
 
-  function SummaryCtrl(game) {
+  function SummaryCtrl(games, AdminService, MessageService, MESSAGE_CODES) {
     let ctrl = {
-      game: game,
+      games: games,
+      game: null,
       team: null,
-      selectTeam: selectTeam
+      loadGame: loadGame,
+      saveScore: saveScore
     };
     return ctrl = angular.extend(this, ctrl);
 
-    function selectTeam(team) {
-      ctrl.team = team;
+    function loadGame(id) {
+      AdminService.getGame(id).then((rsp) => {
+        ctrl.game = rsp.data;
+      });
+    }
+
+    function saveScore() {
+      AdminService.saveGame(ctrl.game).then((rsp) => {
+        MessageService.showInfo({ text: MESSAGE_CODES.SCORE_SAVED });
+      });
     }
   }
 })();

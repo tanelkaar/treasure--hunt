@@ -21,8 +21,7 @@
     <marker data-ng-repeat="waypoint in ctrl.map.waypoints"
         title="{{waypoint.name}}"
         position="[{{waypoint.coords.lat}}, {{waypoint.coords.lng}}]"
-        icon="{{waypoint.state != 'COMPLETED' ? 'img/yellow_pin_with_qm.png': 'img/blue_pin_with_x.png'}}"
-        on-click="ctrl.select(waypoint)">
+        icon="{{waypoint.state != 'COMPLETED' ? 'img/yellow_pin_with_qm.png': 'img/blue_pin_with_x.png'}}">
     </marker>
     <!--
 

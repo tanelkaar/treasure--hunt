@@ -72,13 +72,6 @@ public class GameService {
     return game;
   }
 
-  public Game getFirstGame() {
-    if (CollectionUtils.isEmpty(games)) {
-      return null;
-    }
-    return games.get(0);
-  }
-
   public Game getGame() {
     GameToken token = getToken();
     Game game = getGame(token.getGameId());

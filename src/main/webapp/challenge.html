@@ -10,8 +10,6 @@
       </div>
     -->
       <div class="alert alert-success" data-ng-if="ctrl.challenge.text">
-        <h4 data-ng-if="ctrl.challenge.type === 'QUESTION'">Küsimus</h4>
-        <h4 data-ng-if="ctrl.challenge.type === 'TASK'">Ülesanne</h4>
         <p>{{ctrl.challenge.text}}</p>
 
         <a href="{{ctrl.challenge.url | trustUrl}}" target="_blank" data-ng-if="ctrl.challenge.url">Link</a>
