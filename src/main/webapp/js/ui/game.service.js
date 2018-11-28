@@ -193,9 +193,9 @@
       if (_mapWatcher) {
         $interval.cancel(_mapWatcher);
       }
-      _token = null;
-      _tokenJwt = null;
-      $cookies.remove('game-token');
+      //_token = null;
+      //_tokenJwt = null;
+      //$cookies.remove('game-token');
       $state.go('main');
     }
 

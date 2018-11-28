@@ -159,7 +159,7 @@ public class Team {
     }
   }
 
-  public synchronized GameMap sendLocation(String memberId, Coordinates coords) {
+  public synchronized void sendLocation(String memberId, Coordinates coords) {
     switch (state) {
     case STARTING:
       if (CoordinatesUtil.intersects(startBoundaries, coords)) {
@@ -183,7 +183,6 @@ public class Team {
     case COMPLETED:
     }
     addTrail(memberId, coords);
-    return getMap();
   }
 
   private void addTrail(String memberId, Coordinates coords) {

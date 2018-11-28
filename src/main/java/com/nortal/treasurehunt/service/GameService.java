@@ -7,6 +7,7 @@ import com.nortal.treasurehunt.dto.TeamDTO;
 import com.nortal.treasurehunt.enums.ChallengeAnswerType;
 import com.nortal.treasurehunt.enums.ChallengeType;
 import com.nortal.treasurehunt.enums.ErrorCode;
+import com.nortal.treasurehunt.enums.TeamState;
 import com.nortal.treasurehunt.model.Challenge;
 import com.nortal.treasurehunt.model.ChallengeOption;
 import com.nortal.treasurehunt.model.ChallengeResponse;
@@ -141,7 +142,12 @@ public class GameService {
   }
 
   public GameMap getMap() {
-    return getGame().getTeam(getToken().getTeamId()).getMap();
+    GameMap map = getGame().getTeam(getToken().getTeamId()).getMap();
+    if (getGame().getTeam(getToken().getTeamId()).getState() == TeamState.COMPLETED) {
+      getToken().setGameId(null);
+      getToken().setTeamId(null);
+    }
+    return map;
   }
 
   public Challenge getCurrentChallenge() {
@@ -156,8 +162,8 @@ public class GameService {
     getGame().getTeam(getToken().getTeamId()).completeChallenge(response);
   }
 
-  public GameMap sendLocation(Coordinates coords) {
-    return getGame().getTeam(getToken().getTeamId()).sendLocation(getToken().getMemberId(), coords);
+  public void sendLocation(Coordinates coords) {
+    getGame().getTeam(getToken().getTeamId()).sendLocation(getToken().getMemberId(), coords);
   }
 
   private List<Challenge> generateChallenges(Coordinates coords) {
@@ -199,7 +205,8 @@ public class GameService {
 
     c = new Challenge();
     c.setType(ChallengeType.QUESTION);
-    c.setTexts(new ArrayList<>(Arrays.asList("Kessee laulab köögis?", "Kus kessee laulab?", "Mida kessee köögis teeb?")));
+    c.setTexts(
+        new ArrayList<>(Arrays.asList("Kessee laulab köögis?", "Kus kessee laulab?", "Mida kessee köögis teeb?")));
     c.setVideo("https://www.youtube.com/embed/FIH5gF1z4SY?rel=0");
     c.setOptions(Arrays.asList(new ChallengeOption(IDUtil.getNext(), "kukk"),
         new ChallengeOption(IDUtil.getNext(), "kana"),

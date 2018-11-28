@@ -84,7 +84,8 @@ public class GameController {
   @ResponseStatus(code = HttpStatus.OK)
   public ResponseEntity<GameMap> sendLocation(@RequestBody Coordinates coords) {
     LOG.info("send location");
-    return ResponseEntity.ok(gameService.sendLocation(coords));
+    gameService.sendLocation(coords);
+    return ResponseEntity.ok(gameService.getMap());
   }
 
 }
