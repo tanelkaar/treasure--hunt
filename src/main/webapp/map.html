@@ -1,10 +1,21 @@
 <div map-lazy-load="https://maps.google.com/maps/api/js" map-lazy-load-params="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGEtCoDKLLD83seTo6KaXv5T31giUwHDo">
   <ng-map zoom="15" default-style="false" style="width:100%; height:100%; position: absolute;">
-    <marker data-ng-if="ctrl.map.location"
-      position="[{{ctrl.map.location.lat}}, {{ctrl.map.location.lng}}]"
-      animation="Animation.BOUNCE"
-      centered="!ctrl.map.start && !ctrl.map.finish"
-      icon="img/player.png">
+    <shape data-ng-repeat="waypoint in ctrl.uncompletedWaypoints"
+      id="{{waypoint.challengeId}}"
+      title="shape"
+      name="circle"
+      stroke-color="#FF0000"
+      stroke-opacity="0.5"
+      stroke-weight="1"
+      center="[{{waypoint.coords.lat}}, {{waypoint.coords.lng}}]"
+      radius="{{waypoint.range}}"
+      editable="false" >
+    </shape>
+    <marker data-ng-repeat="waypoint in ctrl.map.waypoints"
+      title="{{waypoint.name}}"
+      position="[{{waypoint.coords.lat}}, {{waypoint.coords.lng}}]"
+      icon="{{waypoint.state != 'COMPLETED' ? 'img/uncompleted.png': 'img/completed.png'}}"
+      on-click="ctrl.select(waypoint)">
     </marker>
     <marker data-ng-if="ctrl.map.start"
       position="[{{ctrl.map.start.coords.lat}}, {{ctrl.map.start.coords.lng}}]"
@@ -18,22 +29,11 @@
       icon="img/finish.png"
       on-click="ctrl.select(ctrl.map.finish)">
     </marker>
-    <marker data-ng-repeat="waypoint in ctrl.map.waypoints"
-        title="{{waypoint.name}}"
-        position="[{{waypoint.coords.lat}}, {{waypoint.coords.lng}}]"
-        icon="{{waypoint.state != 'COMPLETED' ? 'img/uncompleted.png': 'img/completed.png'}}"
-        on-click="ctrl.select(waypoint)">
+    <marker data-ng-if="ctrl.map.location"
+      position="[{{ctrl.map.location.lat}}, {{ctrl.map.location.lng}}]"
+      animation="Animation.BOUNCE"
+      centered="!ctrl.map.start && !ctrl.map.finish"
+      icon="img/player.png">
     </marker>
-    <shape data-ng-repeat="waypoint in ctrl.uncompletedWaypoints"
-      id="{{waypoint.challengeId}}"
-      title="shape"
-      name="circle"
-      stroke-color="#FF0000"
-      stroke-opacity="0.5"
-      stroke-weight="1"
-      center="[{{waypoint.coords.lat}}, {{waypoint.coords.lng}}]"
-      radius="{{waypoint.range}}"
-      editable="false" >
-    </shape>
   </ng-map>
 </div>

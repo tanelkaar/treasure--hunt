@@ -15,6 +15,7 @@
       'CHALLENGE_COMPLETED': 'Ülesanne on lahendatud!',
       'GAME_OVER': 'Meeskond on mängu lõpetanud!',
       'SCORE_SAVED': 'Punktid edukalt salvestatud!',
+      'UPLOADING_IMAGE': 'Laen pilti ära erutu!',
       'IMAGE_UPLOAD_FAILED': 'Pildi laadimine ebaõnnestus!'
     })
     .factory('MessageService', MessageService)

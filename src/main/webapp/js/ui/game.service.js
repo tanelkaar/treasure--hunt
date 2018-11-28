@@ -85,7 +85,6 @@
       }
       _tokenJwt = tokenJwt;
       _token = jwtHelper.decodeToken(_tokenJwt);
-      console.log('AUTH: ', $state.current.name, _token);
     }
 
     function isMember() {
@@ -240,7 +239,6 @@
         return;
       }
       _posWatcher = navigator.geolocation.watchPosition((pos) => {
-        console.log('watcher: ', pos);
         _currentPos = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude
@@ -256,14 +254,12 @@
       if (!isCompatible() || !_posWatcher) {
         return;
       }
-      console.log('stop watcher');
       navigator.geolocation.clearWatch(_posWatcher);
       _posWatcher = null;
     }
 
     // TODO: to be removed
     function getCurrentPos() {
-      console.log('get current pos');
       if (!isCompatible()) {
         MessageService.showError({ text: MESSAGE_CODES.DEVICE_NOT_COMPATIBLE });
         _posDefer = $q.defer();

@@ -30,7 +30,6 @@
   }
 
   function ChallengeCtrl(challenge, $q, imgur, GameService, MessageService, MESSAGE_CODES, ANSWER_TYPE) {
-    console.log('challenge ctrl');
     let ctrl = {
       response: {
         challengeId: challenge.id
@@ -76,6 +75,8 @@
 
       let defer = $q.defer();
       if (ctrl.image) {
+        MessageService.showInfo({ text: MESSAGE_CODES.UPLOADING_IMAGE });
+
         imgur.setAPIKey('Bearer 72517f3b6ab122a8549bd46a09b404dcbf17d9df');
         imgur.upload(ctrl.image).then((image) => {
           ctrl.response.image = image.link;

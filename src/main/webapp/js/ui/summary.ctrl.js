@@ -31,7 +31,7 @@
         ctrl.game = rsp.data;
         _.each(ctrl.game.teams, (team) => {
           if (team.trail.length > 0) {
-            team.time = getTime(team.trail[0].timestamp, team.trail[team.trail.length - 1].timestamp);
+            team.time = getTime(team.trail[0].timestamp, team.trail[team.trail.length-1].timestamp);
           }
         });
       });
@@ -93,7 +93,7 @@
         let idx = ctrl.trailIdx++;
         ctrl.trail.push(_trail[idx]);
         ctrl.trailTime = getTime(_times[0], _times[idx]);
-      }, 100);
+      }, 50);
     }
 
     function getTime(start, end) {

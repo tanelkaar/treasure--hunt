@@ -62,7 +62,6 @@
       },
       resolve: {
         map: (GameService) => {
-          console.log('map resolve');
           return GameService.getMap().then((map) => {
             return map;
           });
@@ -116,7 +115,6 @@
   function run($rootScope, $state, GameService) {
     $rootScope.$on('$stateChangeStart', (event, toState, toParams, fromState, fromParams, options) => {
       if (_.contains(['main', 'map', 'challenge'], toState.name)) {
-        console.log('change state: ', toState.name, GameService.hasGame(), GameService.hasChallenge());
         if (toState.name === 'main' && GameService.hasGame()) {
           event.preventDefault();
           $state.go('map');
