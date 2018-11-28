@@ -72,17 +72,10 @@
         <div class="card-body">
           <div map-lazy-load="https://maps.google.com/maps/api/js" map-lazy-load-params="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGEtCoDKLLD83seTo6KaXv5T31giUwHDo">
             <ng-map zoom="15">
-              <marker data-ng-if="ctrl.team.start" position="[{{ctrl.team.start.lat}}, {{ctrl.team.start.lng}}]" centered="true"
-                icon="img/yellow_pin_with_qm.png">
-              </marker>
-              <marker data-ng-if="ctrl.team.finish" position="[{{ctrl.team.finish.lat}}, {{ctrl.team.finish.lng}}]" icon="img/yellow_pin_with_qm.png">
-              </marker>
-              <marker data-ng-repeat="challenge in ctrl.team.uncompletedChallenges" position="[{{challenge.coordinates.lat}}, {{challenge.coordinates.lng}}]"
-                icon="img/yellow_pin_with_qm.png">
-              </marker>
-              <marker data-ng-repeat="item in ctrl.team.completedChallenges" position="[{{item.challenge.coordinates.lat}}, {{item.challenge.coordinates.lng}}]"
-                icon="img/blue_pin_with_x.png">
-              </marker>
+              <marker data-ng-if="ctrl.team.start" position="[{{ctrl.team.start.lat}}, {{ctrl.team.start.lng}}]" centered="true" icon="img/start.png"></marker>
+              <marker data-ng-if="ctrl.team.finish" position="[{{ctrl.team.finish.lat}}, {{ctrl.team.finish.lng}}]" icon="img/finish.png"></marker>
+              <marker data-ng-repeat="challenge in ctrl.team.uncompletedChallenges" position="[{{challenge.coordinates.lat}}, {{challenge.coordinates.lng}}]" icon="img/uncompleted.png"></marker>
+              <marker data-ng-repeat="item in ctrl.team.completedChallenges" position="[{{item.challenge.coordinates.lat}}, {{item.challenge.coordinates.lng}}]" icon="img/completed.png"></marker>
               <shape name="polyline" path="{{ctrl.trail}}" geodesic="true" stroke-color="#FF0000" stroke-opacity="1.0"
                 stroke-weight="1">
               </shape>

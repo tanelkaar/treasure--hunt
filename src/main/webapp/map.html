@@ -4,29 +4,27 @@
       position="[{{ctrl.map.location.lat}}, {{ctrl.map.location.lng}}]"
       animation="Animation.BOUNCE"
       centered="!ctrl.map.start && !ctrl.map.finish"
-      icon="img/pin_with_star.png">
+      icon="img/player.png">
     </marker>
     <marker data-ng-if="ctrl.map.start"
       position="[{{ctrl.map.start.coords.lat}}, {{ctrl.map.start.coords.lng}}]"
       centered="true"
-      icon="img/yellow_pin_with_qm.png"
+      icon="img/start.png"
       on-click="ctrl.select(ctrl.map.start)">
     </marker>
     <marker data-ng-if="ctrl.map.finish"
       position="[{{ctrl.map.finish.coords.lat}}, {{ctrl.map.finish.coords.lng}}]"
       centered="true"
-      icon="img/yellow_pin_with_qm.png"
+      icon="img/finish.png"
       on-click="ctrl.select(ctrl.map.finish)">
     </marker>
     <marker data-ng-repeat="waypoint in ctrl.map.waypoints"
         title="{{waypoint.name}}"
         position="[{{waypoint.coords.lat}}, {{waypoint.coords.lng}}]"
-        icon="{{waypoint.state != 'COMPLETED' ? 'img/yellow_pin_with_qm.png': 'img/blue_pin_with_x.png'}}"
+        icon="{{waypoint.state != 'COMPLETED' ? 'img/uncompleted.png': 'img/completed.png'}}"
         on-click="ctrl.select(waypoint)">
     </marker>
-    <!--
-
-      <shape data-ng-repeat="waypoint in ctrl.uncompletedWaypoints"
+    <shape data-ng-repeat="waypoint in ctrl.uncompletedWaypoints"
       id="{{waypoint.challengeId}}"
       title="shape"
       name="circle"
@@ -37,6 +35,5 @@
       radius="{{waypoint.range}}"
       editable="false" >
     </shape>
-  -->
   </ng-map>
 </div>
