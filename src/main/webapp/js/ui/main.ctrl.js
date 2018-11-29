@@ -7,7 +7,7 @@
 
   function MainCtrl($state, games, GameService) {
     let ctrl = {
-      game: null,
+      game: games && games.length > 0 ? games[0] : null,
       team: null,
       games: games,
       selectGame: selectGame,
@@ -41,6 +41,7 @@
       GameService.addGame(name).then((rsp) => {
         ctrl.gameName = null;
         ctrl.games.push(rsp.data);
+        selectGame(rsp.data);
       }, () => {
         $state.reload()
       });

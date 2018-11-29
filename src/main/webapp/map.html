@@ -14,20 +14,17 @@
     <marker data-ng-repeat="waypoint in ctrl.map.waypoints"
       title="{{waypoint.name}}"
       position="[{{waypoint.coords.lat}}, {{waypoint.coords.lng}}]"
-      icon="{{waypoint.state != 'COMPLETED' ? 'img/uncompleted.png': 'img/completed.png'}}"
-      on-click="ctrl.select(waypoint)">
+      icon="{{waypoint.state != 'COMPLETED' ? 'img/uncompleted.png': 'img/completed.png'}}">
     </marker>
     <marker data-ng-if="ctrl.map.start"
       position="[{{ctrl.map.start.coords.lat}}, {{ctrl.map.start.coords.lng}}]"
       centered="true"
-      icon="img/start.png"
-      on-click="ctrl.select(ctrl.map.start)">
+      icon="img/start.png">
     </marker>
     <marker data-ng-if="ctrl.map.finish"
       position="[{{ctrl.map.finish.coords.lat}}, {{ctrl.map.finish.coords.lng}}]"
       centered="true"
-      icon="img/finish.png"
-      on-click="ctrl.select(ctrl.map.finish)">
+      icon="img/finish.png">
     </marker>
     <marker data-ng-if="ctrl.map.location"
       position="[{{ctrl.map.location.lat}}, {{ctrl.map.location.lng}}]"
